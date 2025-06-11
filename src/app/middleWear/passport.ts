@@ -33,6 +33,7 @@ passport.use(
         user = await User.create({
           name: profile.displayName,
           email,
+          isVerified: true,
           image: profile.photos?.[0]?.value,
           provider: profile.provider,
         });
