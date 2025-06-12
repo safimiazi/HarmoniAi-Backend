@@ -17,6 +17,7 @@ const getAllUsers = catchAsync(async (req, res) => {
   });
 });
 
+
 const getSingleUser = catchAsync(async (req, res) => {
   const { id } = req.params;
   const result = await UserServices.getSingleUserFromDB(id);
@@ -121,8 +122,12 @@ const verifyEmail = catchAsync(async (req, res) => {
     throw new ApiError(httpStatus.BAD_REQUEST, "Email is already verified")
   }
 
-  if (user.verificationCode !== code || new Date() > user.verificationCodeExpiresAt) {
-    throw new ApiError(httpStatus.FORBIDDEN, "Invalid or expired verification code")
+
+  if (parseInt(user.verificationCode) !== code) {
+    throw new ApiError(httpStatus.FORBIDDEN, "Invalid code")
+  }
+  if (new Date() > user.verificationCodeExpiresAt) {
+    throw new ApiError(httpStatus.FORBIDDEN, "expired verification code")
   }
 
   user.isVerified = true;

@@ -1,6 +1,5 @@
 import { JwtPayload } from "jsonwebtoken";
 import config from "../../config";
-import USER_ROLE from "../../constants/userRole";
 import ApiError from "../../errors/ApiError";
 import { TUser } from "./user.interface";
 import { User } from "./user.model";
@@ -139,6 +138,7 @@ const changeUserLanguage = async (user: any, language: string) => {
   );
 };
 
+
 const changeUserTheme = async (user: any, theme: string) => {
   const existingUser = await User.findOne({
     _id: user.userId,
@@ -152,6 +152,7 @@ const changeUserTheme = async (user: any, theme: string) => {
     { new: true, runValidators: true }
   );
 };
+
 
 const toggleUserDeleteInDB = async (id: string, deleted: boolean) => {
   const existingUser = await User.findById(id);

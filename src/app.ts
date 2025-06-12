@@ -44,6 +44,7 @@ export const createDefaultAdmin = async () => {
     if (!existingAdmin) {
       await User.create({
         name: "Mohebulla miazi",
+        isVerified: true,
         email: "mohibullamiazi@gmail.com",
         password: newHashedPassword, // You should hash this if your schema requires
         role: "admin",

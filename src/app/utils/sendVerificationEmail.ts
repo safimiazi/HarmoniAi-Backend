@@ -9,9 +9,9 @@ const sendEmail = async (to: string, subject: string, html: string) => {
     host: 'smtp.gmail.com',
     port: 587,
     secure: config.node_env === 'production',
-    auth: {
-       user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
+   auth: {
+      user: config.smtp_auth_user,
+      pass: config.smtp_auth_pass, 
     },
   });
 
