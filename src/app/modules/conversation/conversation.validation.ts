@@ -2,7 +2,7 @@ import { z } from "zod";
 
 const createConversationNameValidationSchema = z.object({
   body: z.object({
-    model: z.string(),
+    platform: z.string(),
   }),
 });
 const updateConversationNameValidationSchema = z.object({

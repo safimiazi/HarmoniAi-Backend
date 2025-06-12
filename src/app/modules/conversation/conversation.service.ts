@@ -6,10 +6,10 @@ import { User } from "../user/user.model";
 import { configureModel } from "../configure/configure.model";
 import mongoose from "mongoose";
 
-const createConversationIntoDB = async (id: string,model: string) => {
+const createConversationIntoDB = async (id: string,platform: string) => {
   const result = await Conversation.create({
     name: "New Conversation",
-    model: model,
+    platform: platform,
     userId: id,
   });
 

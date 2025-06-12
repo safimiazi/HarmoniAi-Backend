@@ -7,7 +7,7 @@ import { conversationService } from "./conversation.service";
 const createConversartion = catchAsync(async (req: Request, res: Response) => {
   const result = await conversationService.createConversationIntoDB(
     req.loggedInUser.userId,
-    req.body.model
+    req.body.platform
   );
   sendResponse(res, {
     statusCode: httpStatus.OK,
