@@ -53,12 +53,18 @@ const MessageSchema = new Schema<TMessage>(
   {
     userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
     model: {
-      prompt: String,
-      title: String,
-      name: String,
-      thumbnail_url: String,
-      price: Number,
-      intend: String
+      type: new Schema(
+        {
+          prompt: { type: String },
+          title: { type: String },
+          name: { type: String },
+          thumbnail_url: { type: String },
+          price: { type: Number },
+          intend: { type: String },
+        },
+        { _id: false } // 👉 এতে করে nested subdocument এ আলাদা _id তৈরি হবে না
+      ),
+      default: null, // 👉 Default null if not provided
     },
     price: { type: Number, required: true, min: 0 },
     chatId: {
