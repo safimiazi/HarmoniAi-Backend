@@ -28,10 +28,11 @@ export type TMessage = {
   enhancedPrompt?: string;
   response: TResponse[];
   price: number;
+  model: any
 };
 
 export type TConversation = {
-  model : string;
+  platform : string;
   name: string;
   userId: Types.ObjectId;
   chat: Types.ObjectId[];

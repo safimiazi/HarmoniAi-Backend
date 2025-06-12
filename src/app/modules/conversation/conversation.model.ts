@@ -1,5 +1,6 @@
 import { Schema, model } from "mongoose";
 import { TConversation, TMessage } from "./conversation.interface";
+import { string } from "zod";
 
 const CardSchema = new Schema(
   {
@@ -51,7 +52,15 @@ const ResponseSchema = new Schema(
 const MessageSchema = new Schema<TMessage>(
   {
     userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
-   price: { type: Number, required: true, min: 0 },
+    model: {
+      prompt: String,
+      title: String,
+      name: String,
+      thumbnail_url: String,
+      price: Number,
+      intend: String
+    },
+    price: { type: Number, required: true, min: 0 },
     chatId: {
       type: Schema.Types.ObjectId,
       ref: "Conversation",
@@ -66,7 +75,7 @@ const MessageSchema = new Schema<TMessage>(
 
 const ConversationSchema = new Schema<TConversation>(
   {
-    model: {
+    platform: {
       type: String,
       required: true,
     },
