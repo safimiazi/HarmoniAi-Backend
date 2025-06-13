@@ -137,6 +137,9 @@ export const handleStripeWebhook = async (req: Request, res: Response) => {
     const sessionDb = await mongoose.startSession();
     sessionDb.startTransaction();
 
+
+    console.log(session)
+
     try {
       // Save subscription
       await subscriptionModel.create([{

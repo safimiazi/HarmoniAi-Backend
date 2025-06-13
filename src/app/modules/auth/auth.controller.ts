@@ -26,6 +26,7 @@ const loginUser = catchAsync(async (req, res) => {
 
 const googleCallback = catchAsync(async (req, res) => {
   const user = req.user as any;
+  console.log("hihi hi")
 
   const jwtPayload = {
     userId: user._id.toString(),
@@ -51,12 +52,21 @@ const googleCallback = catchAsync(async (req, res) => {
     maxAge: 1000 * 60 * 60 * 24 * 7,
   });
 
+  console.log("hihi hi")
+
+  // 👇 Redirect to frontend dashboard with accessToken in query
+  // const redirectUrl = `${config.frontend_url}/?token=${accessToken}`;
+  //  res.redirect(redirectUrl);
+
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
     message: "Login successful",
     data: { accessToken },
   });
+
+
+
 });
 
 const changePassword = catchAsync(async (req, res) => {

@@ -24,6 +24,7 @@ passport.use(
               null!
             );
           }
+          
           return done(null, {
             ...user.toObject(),
             _id: user._id.toString(),
@@ -51,3 +52,4 @@ passport.use(
     }
   )
 );
+

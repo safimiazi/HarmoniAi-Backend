@@ -28,6 +28,7 @@ router.get(
   passport.authenticate("google", {
     session: false,
     failureRedirect: "/login",
+    // successRedirect: "http://localhost:5173/dashboard"
   }),
   AuthControllers.googleCallback
 );
