@@ -11,7 +11,6 @@ export default {
   jwt_refresh_secret: process.env.JWT_REFRESH_SECRET,
   jwt_access_expires_in: process.env.JWT_ACCESS_EXPIRES_IN,
   jwt_refresh_expires_in: process.env.JWT_REFRESH_EXPIRES_IN,
-  reset_pass_ui_link: process.env.RESET_PASS_UI_LINK,
   smtp_auth_user: process.env.SMTP_AUTH_USER,
   smtp_auth_pass: process.env.SMTP_AUTH_PASS,
   cloudinary_cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -20,9 +19,13 @@ export default {
   stripe_secret_key: process.env.STRIPE_SECRET_KEY,
   google_client_id: process.env.GOOGLE_CLIENT_ID,
   google_client_secret: process.env.GOOGLE_CLIENT_SECRET,
-  google_callback_url: process.env.GOOGLE_CALLBACK_URL,
+  BACKEND_URL: process.env.BACKEND_URL,
   STRIPE_WEBHOOK_SECRET: process.env.STRIPE_WEBHOOK_SECRET,
   PROJECT_NAME: process.env.PROJECT_NAME,
-  frontend_url: process.env.frontend_url,
+  CLIENT_URL: process.env.CLIENT_URL,
+  GOOGLE_LOGIN_FAILURE_REDIRECT_URL: process.env.GOOGLE_LOGIN_FAILURE_REDIRECT_URL,
+  default_admin_email: process.env.DEFAULT_ADMIN_EMAIL,
+  default_admin_password: process.env.DEFAULT_ADMIN_PASSWORD,
+  default_admin_name: process.env.DEFAULT_ADMIN_NAME,
 
 };

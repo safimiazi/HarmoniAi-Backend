@@ -26,7 +26,6 @@ const loginUser = catchAsync(async (req, res) => {
 
 const googleCallback = catchAsync(async (req, res) => {
   const user = req.user as any;
-  console.log("hihi hi")
 
   const jwtPayload = {
     userId: user._id.toString(),
@@ -45,25 +44,23 @@ const googleCallback = catchAsync(async (req, res) => {
     parseInt(config.jwt_refresh_expires_in!)
   );
 
-  res.cookie("refreshToken", refreshToken, {
-    secure: config.node_env === "production",
-    httpOnly: true,
-    sameSite: "none",
-    maxAge: 1000 * 60 * 60 * 24 * 7,
-  });
+    res.cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "none",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
 
-  console.log("hihi hi")
 
-  // 👇 Redirect to frontend dashboard with accessToken in query
-  // const redirectUrl = `${config.frontend_url}/?token=${accessToken}`;
-  //  res.redirect(redirectUrl);
+  res.redirect(`${config.CLIENT_URL}/oauth-callback?token=${accessToken}`);
 
-  sendResponse(res, {
-    statusCode: httpStatus.OK,
-    success: true,
-    message: "Login successful",
-    data: { accessToken },
-  });
+
+  // sendResponse(res, {
+  //   statusCode: httpStatus.OK,
+  //   success: true,
+  //   message: "Login successful",
+  //   data: { accessToken },
+  // });
 
 
 

@@ -5,6 +5,7 @@ import { AuthValidation } from "./auth.validation";
 import USER_ROLE from "../../constants/userRole";
 import auth from "../../middleWear/auth";
 import passport from "passport";
+import config from "../../config";
 
 const router = express.Router();
 
@@ -27,8 +28,7 @@ router.get(
   "/google/callback",
   passport.authenticate("google", {
     session: false,
-    failureRedirect: "/login",
-    // successRedirect: "http://localhost:5173/dashboard"
+    failureRedirect: `${config.GOOGLE_LOGIN_FAILURE_REDIRECT_URL}`,
   }),
   AuthControllers.googleCallback
 );

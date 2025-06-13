@@ -22,7 +22,11 @@ app.post(
 );
 
 // Middlewares
-app.use(cors());
+app.use(cors({
+  origin: "*", // or your frontend domain
+  credentials: true, // very important for cookies
+})); 
+
 app.use(express.json());
 app.use(cookieParser());
 app.use(passport.initialize());
@@ -35,21 +39,30 @@ app.get("/", (req: Request, res: Response) => {
 
 export const createDefaultAdmin = async () => {
   try {
-    const existingAdmin = await User.findOne({ email: "mohibullamiazi@gmail.com" });
-    const newHashedPassword = await bcrypt.hash(
-      "Admin123",
-      Number(config.bcrypt_salt_rounds)
-    );
+    const existingAdmin = await User.findOne({ email: config.default_admin_email });
 
     if (!existingAdmin) {
+
+
+      const rawPassword = config.default_admin_password;
+
+      if (!rawPassword) {
+        throw new Error("❌ DEFAULT_ADMIN_PASSWORD is not set in environment variables.");
+      }
+      const hashedPassword = await bcrypt.hash(
+        rawPassword.toString(),
+        Number(config.bcrypt_salt_rounds)
+      );
+
       await User.create({
-        name: "Mohebulla miazi",
+        name: config.default_admin_name,
+        email: config.default_admin_email,
+        password: hashedPassword,
         isVerified: true,
-        email: "mohibullamiazi@gmail.com",
-        password: newHashedPassword, // You should hash this if your schema requires
         role: "admin",
         token: 0,
       });
+
       console.log("✅ Default admin created");
     } else {
       console.log("ℹ️ Admin already exists");
