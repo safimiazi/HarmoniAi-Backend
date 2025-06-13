@@ -52,7 +52,7 @@ const googleCallback = catchAsync(async (req, res) => {
     });
 
 
-  res.redirect(`${config.CLIENT_URL}/oauth-callback?token=${accessToken}`);
+  res.redirect(`${config.CLIENT_URL}/auth/google/callback?token=${accessToken}`);
 
 
   // sendResponse(res, {
