@@ -44,12 +44,12 @@ const googleCallback = catchAsync(async (req, res) => {
     parseInt(config.jwt_refresh_expires_in!)
   );
 
-    res.cookie("refreshToken", refreshToken, {
-      httpOnly: true,
-      secure: true,
-      sameSite: "none",
-      maxAge: 1000 * 60 * 60 * 24 * 365,
-    });
+  res.cookie("refreshToken", refreshToken, {
+    secure: config.node_env === "production",
+    httpOnly: true,
+    sameSite: "none",
+    maxAge: 1000 * 60 * 60 * 24 * 365,
+  });
 
 
   res.redirect(`${config.CLIENT_URL}/auth/google/callback?token=${accessToken}`);
