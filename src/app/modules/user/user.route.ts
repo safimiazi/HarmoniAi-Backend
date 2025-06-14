@@ -16,7 +16,7 @@ router.post(
   validateRequest(UserValidations.createUserValidationSchema),
   UserControllers.createAUser
 );
-router.post("/verify", UserControllers.verifyEmail);
+router.post("/verify", UserControllers.verifyOTP);
 router.post("/resend-verification", UserControllers.resendVerificationCode);
 
 

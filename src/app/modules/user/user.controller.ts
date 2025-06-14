@@ -6,6 +6,7 @@ import { User } from "./user.model";
 import ApiError from "../../errors/ApiError";
 import config from "../../config";
 import { createToken } from "../auth/auth.utils";
+import { sendVerificationEmail } from "../../utils/sendVerificationEmail";
 
 const getAllUsers = catchAsync(async (req, res) => {
   const result = await UserServices.getAllUsersFromDB();
@@ -105,29 +106,31 @@ const toggleUserDelete = catchAsync(async (req, res) => {
 });
 
 
-const verifyEmail = catchAsync(async (req, res) => {
+const verifyOTP = catchAsync(async (req, res) => {
   const { email, code } = req.body;
 
-  const user: any = await User.findOne({
-    email,
-    verificationCode: code,
-  })
-
+  const user: any = await User.findOne({ email });
   if (!user) {
-    throw new ApiError(httpStatus.NOT_FOUND, "Invalid email or verification code");
-
+    throw new ApiError(httpStatus.NOT_FOUND, "User not found or code expired.");
   }
 
   if (user.isVerified) {
-    throw new ApiError(httpStatus.BAD_REQUEST, "Email is already verified")
+    throw new ApiError(httpStatus.BAD_REQUEST, "Email is already verified.");
   }
 
-
-  if (parseInt(user.verificationCode) !== code) {
-    throw new ApiError(httpStatus.FORBIDDEN, "Invalid code")
+  if (!user.verificationCode || !user.verificationCodeExpiresAt) {
+    throw new ApiError(httpStatus.BAD_REQUEST, "No active verification code found.");
   }
-  if (new Date() > user.verificationCodeExpiresAt) {
-    throw new ApiError(httpStatus.FORBIDDEN, "expired verification code")
+
+  const isCodeMatched = parseInt(user.verificationCode) === parseInt(code);
+  const isCodeExpired = new Date() > new Date(user.verificationCodeExpiresAt);
+
+  if (!isCodeMatched) {
+    throw new ApiError(httpStatus.FORBIDDEN, "Invalid verification code.");
+  }
+
+  if (isCodeExpired) {
+    throw new ApiError(httpStatus.FORBIDDEN, "Verification code has expired.");
   }
 
   user.isVerified = true;
@@ -138,53 +141,68 @@ const verifyEmail = catchAsync(async (req, res) => {
   const jwtPayload = { userId: user._id.toString(), role: user.role };
   const accessToken = createToken(
     jwtPayload,
-    config.jwt_access_secret as string,
-    parseInt(config.jwt_access_expires_in as string)
+    config.jwt_access_secret!,
+    parseInt(config.jwt_access_expires_in!)
   );
- sendResponse(res, {
-    statusCode: httpStatus.OK,
-    success: true,
-    message: "Email verified successfully",
-    data: { accessToken },
-  });
-})
-const resendVerificationCode = catchAsync(async (req, res) => {
-  const { email } = req.body;
-  const user = await User.findOne({ email });
-  if (!user) throw new ApiError(httpStatus.NOT_FOUND, "User not found");
-
-  if (user.isVerified) throw new ApiError(httpStatus.BAD_REQUEST, "User already verified");
-
-  const now = new Date();
-  const lastSent = user.lastVerificationSentAt || new Date(0);
-  const oneDayLater = new Date(lastSent.getTime() + 24 * 60 * 60 * 1000);
-
-  if (now < oneDayLater) {
-    throw new ApiError(httpStatus.TOO_MANY_REQUESTS, "You can request a new code once every 24 hours");
-  }
-
-  user.verificationCode = generateVerificationCode();
-  user.verificationCodeExpiresAt = new Date(Date.now() + 10 * 60 * 1000);
-  user.lastVerificationSentAt = now;
-  await user.save();
-
-  // TODO: Send email with new code
 
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
-    message: "Verification code resent",
-    data: null
+    message: "Email verified successfully.",
+    data: { accessToken },
   });
-
-
-
 });
+
+
+
+
+const resendVerificationCode = catchAsync(async (req, res) => {
+  const { email } = req.body;
+
+  const user = await User.findOne({ email });
+  if (!user) {
+    throw new ApiError(httpStatus.NOT_FOUND, "User not found.");
+  }
+
+  if (user.isVerified) {
+    throw new ApiError(httpStatus.BAD_REQUEST, "User is already verified.");
+  }
+
+  const now = new Date();
+  const lastSent = user.lastVerificationSentAt || new Date(0);
+  const cooldownEnds = new Date(lastSent.getTime() + 10 * 60 * 1000);
+
+  if (now < cooldownEnds) {
+    const minutesLeft = Math.ceil((cooldownEnds.getTime() - now.getTime()) / 60000);
+    throw new ApiError(
+      httpStatus.TOO_MANY_REQUESTS,
+      `Please wait ${minutesLeft} more minute(s) before requesting a new code.`
+    );
+  }
+
+  const newCode = generateVerificationCode();
+  user.verificationCode = newCode;
+  user.verificationCodeExpiresAt = new Date(now.getTime() + 10 * 60 * 1000); // 10 mins expiry
+  user.lastVerificationSentAt = now;
+
+  await user.save();
+
+  await sendVerificationEmail(user.email, newCode);
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "A new verification code has been sent to your email.",
+    data: null,
+  });
+});
+
+
 
 
 export const UserControllers = {
   getSingleUser,
-  verifyEmail,
+  verifyOTP,
   getMe,
   resendVerificationCode,
   getAllUsers,
