@@ -48,7 +48,7 @@ const googleCallback = catchAsync(async (req, res) => {
       httpOnly: true,
       secure: true,
       sameSite: "none",
-      maxAge: 7 * 24 * 60 * 60 * 1000,
+      maxAge: 1000 * 60 * 60 * 24 * 365,
     });
 
 
