@@ -5,7 +5,7 @@ export const sendEmail = async (to: string, html: string) => {
   const transporter = nodemailer.createTransport({
     host: 'smtp.gmail.com', // gmail's smtp host
     port: 587, // gmail's smtp port
-    secure: config.node_env === 'production',
+    secure: false,
     auth: {
       user: config.smtp_auth_user,
       pass: config.smtp_auth_pass, // ph-university's app password set in my gmail's security
