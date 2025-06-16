@@ -25,7 +25,27 @@ const PricingSchema = new mongoose.Schema(
       min: 0,
     },
 
+ 
+    type: {
+      type: String,
+      enum: ["one_time", "recurring"],
+      default: "one_time",
+      required: true,
+    },
 
+    interval: {
+      type: String,
+      enum: ["month", "year"],
+      required: function (this: any) {
+        return this.type === "recurring";
+      },
+    },
+      stripePriceId: {
+      type: String,
+      required: function (this: any) {
+        return this.type === "recurring";
+      },
+    },
 
     isDeleted: {
       type: Boolean,

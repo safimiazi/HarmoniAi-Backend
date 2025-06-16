@@ -19,9 +19,10 @@ export const subscriptionService = {
       }
     }
   },
-  async getAllSubscriptionFromDB(query: any) {
-    try {
 
+  
+  async getAllTransactionFromDB(query: any) {
+    try {
 
       const service_query = new QueryBuilder(subscriptionModel.find(), query)
         .search(SUBSCRIPTION_SEARCHABLE_FIELDS)
@@ -30,7 +31,25 @@ export const subscriptionService = {
         .paginate()
         .fields();
 
-      const result = await service_query.modelQuery;
+      const populatedResults = await service_query.modelQuery
+        .populate("userId")
+        .populate("pricingPlanId");
+
+      const result = populatedResults.map((sub: any) => ({
+        _id: sub._id,
+        user: sub.userId, // renamed
+        pricingPlan: sub.pricingPlanId, // renamed
+        stripePaymentIntentId: sub.stripePaymentIntentId,
+        stripeCustomerId: sub.stripeCustomerId,
+        stripeSubscriptionId: sub.stripeSubscriptionId,
+        status: sub.status,
+        amountPaid: sub.amountPaid,
+        currency: sub.currency,
+        paymentDate: sub.paymentDate,
+        isRecurring: sub.isRecurring,
+        createdAt: sub.createdAt,
+        updatedAt: sub.updatedAt,
+      }));
       const meta = await service_query.countTotal();
       return {
         result,
@@ -45,17 +64,90 @@ export const subscriptionService = {
       }
     }
   },
-  async getSingleSubscriptionFromDB(id: string) {
+
+
+  async getUserTransactionsFromDB(userId: string, query: any) {
     try {
-      return await subscriptionModel.findById(id);
+      const service_query = new QueryBuilder(
+        subscriptionModel.find({ userId }), // 👈 Only current user's transactions
+        query
+      )
+        .search(SUBSCRIPTION_SEARCHABLE_FIELDS)
+        .filter()
+        .sort()
+        .paginate()
+        .fields();
+
+      const populatedResults = await service_query.modelQuery
+        .populate("userId")
+        .populate("pricingPlanId");
+
+      const result = populatedResults.map((sub: any) => ({
+        _id: sub._id,
+        user: sub.userId,
+        pricingPlan: sub.pricingPlanId,
+        stripePaymentIntentId: sub.stripePaymentIntentId,
+        stripeCustomerId: sub.stripeCustomerId,
+        stripeSubscriptionId: sub.stripeSubscriptionId,
+        status: sub.status,
+        amountPaid: sub.amountPaid,
+        currency: sub.currency,
+        paymentDate: sub.paymentDate,
+        isRecurring: sub.isRecurring,
+        createdAt: sub.createdAt,
+        updatedAt: sub.updatedAt,
+      }));
+
+      const meta = await service_query.countTotal();
+
+      return {
+        result,
+        meta,
+      };
     } catch (error: unknown) {
-      if (error instanceof Error) {
-        throw new Error(`${error.message}`);
-      } else {
-        throw new Error("An unknown error occurred while fetching by ID.");
-      }
+      throw error;
     }
-  },
+  }
+
+  ,
+async getSingleTransactionFromDB(id: string, userId: string) {
+  try {
+    const sub = await subscriptionModel
+      .findOne({ _id: id, userId })
+      .populate("userId")
+      .populate("pricingPlanId");
+
+    if (!sub) {
+      throw new Error("Transaction not found or access denied.");
+    }
+
+    const result = {
+      _id: sub._id,
+      user: sub.userId,
+      pricingPlan: sub.pricingPlanId,
+      stripePaymentIntentId: sub.stripePaymentIntentId,
+      stripeCustomerId: sub.stripeCustomerId,
+      stripeSubscriptionId: sub.stripeSubscriptionId,
+      status: sub.status,
+      amountPaid: sub.amountPaid,
+      currency: sub.currency,
+      paymentDate: sub.paymentDate,
+      isRecurring: sub.isRecurring,
+  
+    };
+
+    return result;
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      throw new Error(`Failed to fetch transaction: ${error.message}`);
+    } else {
+      throw new Error("An unknown error occurred while fetching the transaction.");
+    }
+  }
+}
+,
+
+
   async updateSubscriptionIntoDB(data: any) {
     try {
 

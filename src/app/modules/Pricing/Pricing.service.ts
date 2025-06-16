@@ -3,16 +3,58 @@ import { PRICING_SEARCHABLE_FIELDS } from "./Pricing.constant";
 import QueryBuilder from "../../builder/QueryBuilder";
 import ApiError from "../../errors/ApiError";
 import httpStatus from "http-status";
+import { stripe } from "../../utils/stripe";
 
 export const PricingService = {
   async postPricingIntoDB(data: any) {
     try {
-      // Check if a pricing plan with the same name already exists
-      const existingPricing = await PricingModel.findOne({ name: data.name, isDeleted: false });
+      // // Check if a pricing plan with the same name already exists
+      // const existingPricing = await PricingModel.findOne({ name: data.name, isDeleted: false });
+      // if (existingPricing) {
+      //   throw new ApiError(httpStatus.CONFLICT, "A pricing plan with this name already exists.");
+      // }
+      // return await PricingModel.create(data);
+
+      const existingPricing = await PricingModel.findOne({
+        name: data.name,
+        isDeleted: false,
+      })
+
       if (existingPricing) {
-        throw new ApiError(httpStatus.CONFLICT, "A pricing plan with this name already exists.");
+        throw new ApiError(httpStatus.CONFLICT, "A pricing plan with this name already exists.")
       }
-      return await PricingModel.create(data);
+      //  If plan type is recurring, create Stripe Product & Price
+      if (data.type === "recurring") {
+        if (!data.interval || !["month", "year"].includes(data.interval)) {
+          throw new ApiError(
+            httpStatus.BAD_REQUEST,
+            "Recurring plans require a valid interval ('month' or 'year')"
+          );
+        }
+
+        // 1. Create Stripe product
+        const stripeProduct = await stripe.products.create({
+          name: data.name,
+        });
+
+        // 2. Create Stripe recurring price
+        const stripePrice = await stripe.prices.create({
+          unit_amount: data.price * 100, // price in cents
+          currency: "usd",
+          recurring: {
+            interval: data.interval, // 'month' or 'year'
+          },
+          product: stripeProduct.id,
+        });
+
+        // 3. Attach stripePriceId to the data
+        data.stripePriceId = stripePrice.id;
+      }
+
+      // create Pricing in MongoDB:
+      return await PricingModel.create(data)
+
+
     } catch (error: unknown) {
       throw error;
     }

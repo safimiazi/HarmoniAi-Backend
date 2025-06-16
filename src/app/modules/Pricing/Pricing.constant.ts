@@ -1,1 +1,1 @@
-export const PRICING_SEARCHABLE_FIELDS = [];
+export const PRICING_SEARCHABLE_FIELDS = ["name"];

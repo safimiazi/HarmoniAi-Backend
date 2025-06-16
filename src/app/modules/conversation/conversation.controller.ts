@@ -34,7 +34,7 @@ const addAMessage = catchAsync(async (req: Request, res: Response) => {
 
 const getAllConversations = catchAsync(async (req: Request, res: Response) => {
   const { userId } = req.loggedInUser;
-  const result = await conversationService.getAllConversationsFromDB(userId);
+  const result = await conversationService.getAllConversationsFromDB(userId ,req.query);
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,

@@ -5,8 +5,11 @@ import ApiError from "../../errors/ApiError";
 import { User } from "../user/user.model";
 import { configureModel } from "../configure/configure.model";
 import mongoose from "mongoose";
+import QueryBuilder from "../../builder/QueryBuilder";
+import { CONFIGURE_SEARCHABLE_FIELDS } from "../configure/configure.constant";
+import { CONVERSATION_SEARCHABLE_FIELDS } from "./conversation.constant";
 
-const createConversationIntoDB = async (id: string,platform: string) => {
+const createConversationIntoDB = async (id: string, platform: string) => {
   const result = await Conversation.create({
     name: "New Conversation",
     platform: platform,
@@ -81,13 +84,35 @@ const addAMessage = async (payload: TMessage) => {
   }
 };
 
-const getAllConversationsFromDB = async (id: string) => {
-  const result = await Conversation.find({ userId: id }).select("name _id");
+const getAllConversationsFromDB = async (id: string, query: any) => {
+
+  const service_query = new QueryBuilder(Conversation.find({ userId: id }), query)
+    .search(CONVERSATION_SEARCHABLE_FIELDS)
+    .filter()
+    .sort()
+    .paginate()
+    .fields();
+
+  const result = await service_query.modelQuery.populate("userId");
   if (!result) {
     throw new ApiError(httpStatus.NOT_FOUND, "No conversations found");
   }
-  return result;
+  const meta = await service_query.countTotal();
+  return {
+    result,
+    meta,
+  };
+
+
+
+
+
+
+
 };
+
+
+
 
 const getMessagesFromConversationFromDB = async (conversationId: string) => {
   const conversation = await Conversation.findById(conversationId).populate({

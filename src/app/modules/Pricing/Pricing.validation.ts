@@ -23,8 +23,12 @@ export const PricingPostValidation = z.object({
     token: z.number({
       required_error: "Token is required",
     }),
+    type: z.enum(["one_time", "recurring"], {
+      required_error: "Plan type is required",
+    }),
+    interval: z.enum(["month", "year"]).optional(),
 
-  }),
+  })
 });
 
 export const PricingUpdateValidation = PricingPostValidation.partial();

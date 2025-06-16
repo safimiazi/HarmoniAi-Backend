@@ -18,7 +18,7 @@ router.post(
 );
 router.post("/verify", UserControllers.verifyOTP);
 router.post("/resend-verification", UserControllers.resendVerificationCode);
-
+router.get("/all-user", auth(USER_ROLE.ADMIN), UserControllers.getAllUsers)
 
 router.post(
   "/upload-image",

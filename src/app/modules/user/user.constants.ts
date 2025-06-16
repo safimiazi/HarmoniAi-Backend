@@ -41,3 +41,6 @@ export const LANGUAGE: TLanguage[] = [
   "Vietnamese",
   "Yoruba",
 ];
+
+
+ export const USER_SEARCHABLE_FIELDS = ["name", "email"];

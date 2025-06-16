@@ -30,7 +30,7 @@ router.get(
 
 router.get(
   "/:conversationId",
-  auth(USER_ROLE.ADMIN, USER_ROLE.USER),
+  // auth(USER_ROLE.ADMIN, USER_ROLE.USER),
   conversationController.getMessagesFromConversation
 );
 

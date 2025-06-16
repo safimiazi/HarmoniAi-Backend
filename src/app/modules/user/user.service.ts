@@ -9,7 +9,7 @@ import { sendFileToCloudinary } from "../../utils/sendFileToCloudinary";
 import { sendVerificationEmail } from "../../utils/sendVerificationEmail";
 
 
-  export const generateVerificationCode = () => {
+export const generateVerificationCode = () => {
   return Math.floor(100000 + Math.random() * 900000).toString(); // Generates a 6-digit verification code 
 }
 
@@ -17,9 +17,20 @@ import { sendVerificationEmail } from "../../utils/sendVerificationEmail";
 
 
 
-const getAllUsersFromDB = async () => {
-  const result = await User.find({ isDeleted: false });
-  return result;
+const getAllUsersFromDB = async (query: any) => {
+  const service_query = new QueryBuilder(User.find(), query)
+    .search(USER_SEARCHABLE_FIELDS)
+    .filter()
+    .sort()
+    .paginate()
+    .fields();
+
+  const result = await service_query.modelQuery;
+  const meta = await service_query.countTotal();
+  return {
+    result,
+    meta,
+  };
 };
 
 const getSingleUserFromDB = async (id: string) => {
@@ -43,6 +54,8 @@ const getMeFromDB = async (user: JwtPayload) => {
 };
 
 import mongoose from 'mongoose';
+import QueryBuilder from "../../builder/QueryBuilder";
+import { USER_SEARCHABLE_FIELDS } from "./user.constants";
 
 const createAUserIntoDB = async (payload: TUser) => {
   const session = await mongoose.startSession();
@@ -70,7 +83,7 @@ const createAUserIntoDB = async (payload: TUser) => {
     };
 
     // Try to create the user in transaction
-    const user : any = await User.create([userData], { session });
+    const user: any = await User.create([userData], { session });
 
     // Send email after DB is guaranteed to be successful
     await sendVerificationEmail(payload.email, verificationCode);

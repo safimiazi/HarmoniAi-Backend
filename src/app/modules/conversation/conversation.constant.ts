@@ -1,0 +1,1 @@
+export const CONVERSATION_SEARCHABLE_FIELDS = ["platform", "name"]

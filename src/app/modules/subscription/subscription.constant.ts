@@ -1,1 +1,1 @@
-export const SUBSCRIPTION_SEARCHABLE_FIELDS = [];
+export const SUBSCRIPTION_SEARCHABLE_FIELDS = ["status", "currency"];
