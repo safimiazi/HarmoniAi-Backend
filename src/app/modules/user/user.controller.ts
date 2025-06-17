@@ -1,4 +1,4 @@
-import { generateVerificationCode, UserServices } from "./user.service";
+import { generateVerificationCode, updateUserProfileService, UserServices } from "./user.service";
 import { catchAsync } from "../../utils/catchAsync";
 import sendResponse from "../../utils/sendResponse";
 import httpStatus from "http-status";
@@ -15,6 +15,50 @@ const getAllUsers = catchAsync(async (req, res) => {
     success: true,
     message: "All users retrieved successfully.",
     data: result,
+  });
+});
+const updateUserProfile = catchAsync(async (req, res) => {
+   const userId = req.loggedInUser.userId;
+
+
+  // ✅ Allowed fields to update
+  const allowedFields = [
+    "name",
+    "image",
+    "region",
+    "language",
+    "gender",
+    "age",
+    "height",
+    "size",
+    "shoeSize",
+    "photo",
+    "omuzUsername",
+    "addresses",
+    "phoneNumber",
+    "identificationNumber",
+    "theme"
+  ];
+
+  // 🔒 Filter only allowed fields
+  const updatePayload: Partial<any> = {};
+  for (const key of allowedFields) {
+    console.log(key , allowedFields)
+    if (req.body[key] !== undefined) {
+      updatePayload[key] = req.body[key];
+    }
+  }
+
+
+  console.log(updatePayload);
+
+  return 
+  const updatedUser = await updateUserProfileService(userId, updatePayload);
+
+  res.status(httpStatus.OK).json({
+    success: true,
+    message: "Profile updated successfully",
+    data: updatedUser,
   });
 });
 
@@ -203,6 +247,7 @@ const resendVerificationCode = catchAsync(async (req, res) => {
 export const UserControllers = {
   getSingleUser,
   verifyOTP,
+  updateUserProfile,
   getMe,
   resendVerificationCode,
   getAllUsers,

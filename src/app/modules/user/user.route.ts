@@ -16,6 +16,8 @@ router.post(
   validateRequest(UserValidations.createUserValidationSchema),
   UserControllers.createAUser
 );
+router.put('/update-profile', auth(USER_ROLE.ADMIN, USER_ROLE.USER), UserControllers.updateUserProfile);
+
 router.post("/verify", UserControllers.verifyOTP);
 router.post("/resend-verification", UserControllers.resendVerificationCode);
 router.get("/all-user", auth(USER_ROLE.ADMIN), UserControllers.getAllUsers)

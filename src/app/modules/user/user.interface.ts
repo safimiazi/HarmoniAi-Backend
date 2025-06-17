@@ -41,23 +41,51 @@ export type TLanguage =
   | "Vietnamese"
   | "Yoruba";
 
-export interface TUser {
+export type TAddress = {
+  label?: string; // Optional (e.g., Home, Office)
+  street: string;
+  city: string;
+  state?: string;
+  postalCode?: string;
+  country: string;
+};
+
+export type TUser = {
+  _id?: string;
   name: string;
-  image?: string;
+  image?: string | null;
   email: string;
-  password: string;
-  role: "user" | "admin";
+  password?: string;
   isVerified: boolean;
-  verificationCode?: string;
-  verificationCodeExpiresAt?: Date;
-  lastVerificationSentAt?: Date;
+  verificationCode?: string | null;
+  verificationCodeExpiresAt?: Date | null;
+  lastVerificationSentAt?: Date | null;
+  role: "user" | "admin";
   token: number;
   theme: "dark" | "light" | "system";
-  language: TLanguage;
+  language: string;
   isDeleted: boolean;
   provider?: string;
-  createdAt: Date;
-  updatedAt: Date;
-}
+
+  // 🆕 Additional Fields
+  region?: string;
+  addresses?: TAddress[];
+  phoneNumber?: string;
+  identificationNumber?: string;
+
+  // Personal info
+  gender?: "male" | "female" | "other";
+  height?: number; // in cm
+  size?: string; // clothing size (e.g., S, M, L, XL)
+  shoeSize?: string | number;
+  age?: number;
+
+  // // Omuz (Turkey-specific)
+  // omuzUsername?: string;
+  // isOmuzVerified?: boolean;
+
+  createdAt?: Date;
+  updatedAt?: Date;
+};
 
 export type TUserRole = (typeof USER_ROLE)[keyof typeof USER_ROLE];

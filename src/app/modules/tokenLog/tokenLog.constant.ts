@@ -1,0 +1,1 @@
+export const TOKENLOG_SEARCHABLE_FIELDS = [];

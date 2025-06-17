@@ -7,14 +7,27 @@ import bcrypt from "bcrypt";
 import httpStatus from "http-status";
 import { sendFileToCloudinary } from "../../utils/sendFileToCloudinary";
 import { sendVerificationEmail } from "../../utils/sendVerificationEmail";
-
+import mongoose from 'mongoose';
+import QueryBuilder from "../../builder/QueryBuilder";
+import { USER_SEARCHABLE_FIELDS } from "./user.constants";
 
 export const generateVerificationCode = () => {
   return Math.floor(100000 + Math.random() * 900000).toString(); // Generates a 6-digit verification code 
 }
 
 
+export const updateUserProfileService = async (
+  userId: string,
+  updatePayload: Partial<any>
+) => {
+  const updatedUser = await User.findByIdAndUpdate(
+    userId,
+    { $set: updatePayload },
+    { new: true, runValidators: true }
+  ).select("-password -verificationCode -verificationCodeExpiresAt");
 
+  return updatedUser;
+};
 
 
 const getAllUsersFromDB = async (query: any) => {
@@ -53,9 +66,7 @@ const getMeFromDB = async (user: JwtPayload) => {
   return existingUser;
 };
 
-import mongoose from 'mongoose';
-import QueryBuilder from "../../builder/QueryBuilder";
-import { USER_SEARCHABLE_FIELDS } from "./user.constants";
+
 
 const createAUserIntoDB = async (payload: TUser) => {
   const session = await mongoose.startSession();
@@ -66,8 +77,11 @@ const createAUserIntoDB = async (payload: TUser) => {
     if (existingUser) {
       throw new ApiError(httpStatus.CONFLICT, "User with this email already exists");
     }
+    if(!payload.password){
+      throw new ApiError(httpStatus.NOT_FOUND, "Password must be included")
+    }
 
-    const hashedPassword = await bcrypt.hash(payload.password, Number(config.bcrypt_salt_rounds));
+    const hashedPassword = bcrypt.hash(payload.password, Number(config.bcrypt_salt_rounds));
     const verificationCode = generateVerificationCode();
     const verificationCodeExpiresAt = new Date(Date.now() + 10 * 60 * 1000);
     const lastVerificationSentAt = new Date();

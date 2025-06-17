@@ -3,6 +3,7 @@ import { CART_SEARCHABLE_FIELDS } from "./cart.constant";
 import status from "http-status";
 import ApiError from "../../errors/ApiError";
 import QueryBuilder from "../../builder/QueryBuilder";
+import httpStatus from "http-status";
 
 export const cartService = {
   async postCartIntoDB(data: any) {
@@ -64,7 +65,7 @@ export const cartService = {
         new: true,
       });
       if (!result) {
-        throw new Error("cart not found.");
+        throw new ApiError( httpStatus.NOT_FOUND,"cart not found.");
       }
       return result;
     } catch (error: unknown) {

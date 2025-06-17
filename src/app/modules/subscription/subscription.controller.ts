@@ -23,6 +23,7 @@ import mongoose from "mongoose";
 import { subscriptionService } from "./subscription.service";
 import sendResponse from "../../utils/sendResponse";
 import { catchAsync } from "../../utils/catchAsync";
+import { tokenLogModel } from "../tokenLog/tokenLog.model";
 
 export const createCheckoutSession = async (req: Request, res: Response) => {
   const { pricingPlanId, userId, email } = req.body;
@@ -78,33 +79,6 @@ export const createCheckoutSession = async (req: Request, res: Response) => {
 
   // create the stripe checkout session:
   const session = await stripe.checkout.sessions.create(sessionConfig);
-
-
-
-
-  // const session = await stripe.checkout.sessions.create({
-  //   payment_method_types: ["card"],
-  //   customer: customer.id,
-  //   line_items: [
-  //     {
-  //       price_data: {
-  //         currency: "usd",
-  //         product_data: {
-  //           name: plan.name,
-  //         },
-  //         unit_amount: plan.price * 100, // USD in cents
-  //       },
-  //       quantity: 1,
-  //     },
-  //   ],
-  //   mode: "payment",
-  //   success_url: `${process.env.CLIENT_URL}/subscription-success`,
-  //   cancel_url: `${process.env.CLIENT_URL}/subscription-cancel`,
-  //   metadata: {
-  //     userId,
-  //     pricingPlanId,
-  //   },
-  // });
 
   res.json({ url: session.url });
 };
@@ -167,7 +141,9 @@ export const handleStripeWebhook = async (req: Request, res: Response) => {
         pricingPlanId,
         stripePaymentIntentId: session.payment_intent,
         stripeCustomerId: session.customer,
-        status: session.payment_status,
+        stripeStatus: session.payment_status,
+        status: "active", // ✅ add this line
+
         amountPaid: session.amount_total,
         currency: session.currency,
         stripeSubscriptionId: null,
@@ -180,6 +156,22 @@ export const handleStripeWebhook = async (req: Request, res: Response) => {
         { $inc: { token: plan.token } },
         { new: true, session: sessionDb }
       );
+
+      const user = await User.findById(userId).session(sessionDb);
+      const previousToken = user?.token || 0;
+      const newToken = previousToken + plan.token;
+
+      await tokenLogModel.create([{
+        userId,
+        source: "one_time",
+        planId: pricingPlanId,
+        tokenAdded: plan.token,
+        newToken,
+        previousToken,
+        stripeEventId: session.payment_intent,
+        note: "One-time token purchase"
+      }], { session: sessionDb });
+
 
       await sessionDb.commitTransaction();
     } catch (error) {
@@ -236,9 +228,10 @@ export const handleStripeWebhook = async (req: Request, res: Response) => {
         pricingPlanId,
         stripeSubscriptionId: subscriptionId,
         stripeCustomerId: customerId,
-        status: invoice.status,
+        stripeStatus: invoice.status,
         amountPaid: invoice.amount_paid,
         currency: invoice.currency,
+        status: "active", // ✅ add this line
         isRecurring: true,
       }], { session: sessionDb });
 
@@ -248,6 +241,22 @@ export const handleStripeWebhook = async (req: Request, res: Response) => {
         { $inc: { token: plan.token } },
         { new: true, session: sessionDb }
       );
+
+      const user = await User.findById(userId).session(sessionDb);
+      const previousToken = user?.token || 0;
+      const newToken = previousToken + plan.token;
+
+      await tokenLogModel.create([{
+        userId,
+        source: "subscription",
+        planId: pricingPlanId,
+        tokenAdded: plan.token,
+        newToken,
+        previousToken,
+        stripeEventId: invoice.id,
+        note: "Recurring token renewal"
+      }], { session: sessionDb });
+
 
       await sessionDb.commitTransaction();
     } catch (error) {
@@ -289,7 +298,7 @@ export const getTransactions = catchAsync(async (req: Request, res: Response) =>
   });
 });
 export const getSingleTransaction = catchAsync(async (req: Request, res: Response) => {
-    const { userId } = req.loggedInUser;
+  const { userId } = req.loggedInUser;
   const result = await subscriptionService.getSingleTransactionFromDB(req.params.transactionId, userId);
   sendResponse(res, {
     statusCode: httpStatus.OK,

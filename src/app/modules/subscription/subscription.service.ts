@@ -1,6 +1,8 @@
 import { subscriptionModel } from "./subscription.model";
 import { SUBSCRIPTION_SEARCHABLE_FIELDS } from "./subscription.constant";
 import QueryBuilder from "../../builder/QueryBuilder";
+import ApiError from "../../errors/ApiError";
+import httpStatus from "http-status";
 
 
 
@@ -12,15 +14,11 @@ export const subscriptionService = {
     try {
       return await subscriptionModel.create(data);
     } catch (error: unknown) {
-      if (error instanceof Error) {
-        throw new Error(`${error.message}`);
-      } else {
-        throw new Error("An unknown error occurred while fetching by ID.");
-      }
+      throw error;
     }
   },
 
-  
+
   async getAllTransactionFromDB(query: any) {
     try {
 
@@ -57,11 +55,8 @@ export const subscriptionService = {
       };
 
     } catch (error: unknown) {
-      if (error instanceof Error) {
-        throw new Error(`${error.message}`);
-      } else {
-        throw new Error("An unknown error occurred while fetching by ID.");
-      }
+      throw error;
+
     }
   },
 
@@ -110,42 +105,38 @@ export const subscriptionService = {
   }
 
   ,
-async getSingleTransactionFromDB(id: string, userId: string) {
-  try {
-    const sub = await subscriptionModel
-      .findOne({ _id: id, userId })
-      .populate("userId")
-      .populate("pricingPlanId");
+  async getSingleTransactionFromDB(id: string, userId: string) {
+    try {
+      const sub = await subscriptionModel
+        .findOne({ _id: id, userId })
+        .populate("userId")
+        .populate("pricingPlanId");
 
-    if (!sub) {
-      throw new Error("Transaction not found or access denied.");
-    }
+      if (!sub) {
+        throw new ApiError(httpStatus.NOT_FOUND, "Transaction not found or access denied.");
+      }
 
-    const result = {
-      _id: sub._id,
-      user: sub.userId,
-      pricingPlan: sub.pricingPlanId,
-      stripePaymentIntentId: sub.stripePaymentIntentId,
-      stripeCustomerId: sub.stripeCustomerId,
-      stripeSubscriptionId: sub.stripeSubscriptionId,
-      status: sub.status,
-      amountPaid: sub.amountPaid,
-      currency: sub.currency,
-      paymentDate: sub.paymentDate,
-      isRecurring: sub.isRecurring,
-  
-    };
+      const result = {
+        _id: sub._id,
+        user: sub.userId,
+        pricingPlan: sub.pricingPlanId,
+        stripePaymentIntentId: sub.stripePaymentIntentId,
+        stripeCustomerId: sub.stripeCustomerId,
+        stripeSubscriptionId: sub.stripeSubscriptionId,
+        status: sub.status,
+        amountPaid: sub.amountPaid,
+        currency: sub.currency,
+        paymentDate: sub.paymentDate,
+        isRecurring: sub.isRecurring,
 
-    return result;
-  } catch (error: unknown) {
-    if (error instanceof Error) {
-      throw new Error(`Failed to fetch transaction: ${error.message}`);
-    } else {
-      throw new Error("An unknown error occurred while fetching the transaction.");
+      };
+
+      return result;
+    } catch (error: unknown) {
+      throw error;
     }
   }
-}
-,
+  ,
 
 
   async updateSubscriptionIntoDB(data: any) {
@@ -153,24 +144,19 @@ async getSingleTransactionFromDB(id: string, userId: string) {
 
 
 
-      const isDeleted = await subscriptionModel.findOne({ _id: data.id });
 
 
       const result = await subscriptionModel.updateOne({ _id: data.id }, data, {
         new: true,
       });
       if (!result) {
-        throw new Error("subscription not found.");
+        throw new ApiError(httpStatus.NOT_FOUND, "subscription not found.");
       }
       return result;
 
 
     } catch (error: unknown) {
-      if (error instanceof Error) {
-        throw new Error(`${error.message}`);
-      } else {
-        throw new Error("An unknown error occurred while fetching by ID.");
-      }
+      throw error;
     }
   },
   async deleteSubscriptionFromDB(id: string) {
@@ -187,11 +173,7 @@ async getSingleTransactionFromDB(id: string, userId: string) {
       return;
 
     } catch (error: unknown) {
-      if (error instanceof Error) {
-        throw new Error(`${error.message}`);
-      } else {
-        throw new Error("An unknown error occurred while fetching by ID.");
-      }
+      throw error;
     }
   },
 };

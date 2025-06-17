@@ -6,7 +6,18 @@ const subscriptionSchema = new mongoose.Schema(
         pricingPlanId: { type: Schema.Types.ObjectId, ref: 'Pricing', required: true },
         stripePaymentIntentId: { type: String, required: false }, // for one-time payment
         stripeCustomerId: { type: String, required: true },
-        status: { type: String, required: true }, // e.g., "succeeded", "failed", etc.
+        // Your internal status
+        status: {
+            type: String,
+            enum: ["pending", "active", "canceled", "expired", "failed"],
+            default: "pending",
+            required: true,
+        },
+
+        // Stripe raw status
+        stripeStatus: {
+            type: String, // "paid", "incomplete", etc.
+        },
         amountPaid: { type: Number }, // in cents
         stripeSubscriptionId: {
             type: String,
