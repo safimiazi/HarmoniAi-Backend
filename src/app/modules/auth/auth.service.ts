@@ -93,7 +93,7 @@ const changePassword = async (
     }
 
     // Check if password is correct
-    if (!(await bcrypt.compare(payload?.oldPassword, user?.password))) {
+    if (!(await bcrypt.compare(payload?.oldPassword, user?.password as string))) {
       throw new ApiError(httpStatus.FORBIDDEN, "Password did not match!");
     }
 
