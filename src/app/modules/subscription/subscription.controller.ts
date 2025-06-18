@@ -31,6 +31,34 @@ export const createCheckoutSession = async (req: Request, res: Response) => {
   const plan = await PricingModel.findById(pricingPlanId);
   if (!plan) return res.status(404).json({ message: "Plan not found" });
 
+  if (plan.type === "recurring") {
+
+
+    const existing = await subscriptionModel.findOne({
+      userId,
+      isRecurring: true,
+      status: "active",
+    });
+
+    const stripeSubscriptions = await stripe.subscriptions.list({
+      customer: existing?.stripeCustomerId, // stripe customer's ID
+      status: "active",
+    });
+    if (stripeSubscriptions.data.length > 0) {
+      return res.status(400).json({
+        message: "You already have an active subscription.",
+      });
+    }
+
+
+    if (existing) {
+      return res.status(400).json({
+        message: "You already have an active subscription.",
+      });
+    }
+  }
+
+
   // create a new stripe customer 
   const customer = await stripe.customers.create({
     email,
@@ -84,6 +112,8 @@ export const createCheckoutSession = async (req: Request, res: Response) => {
 };
 
 export const handleStripeWebhook = async (req: Request, res: Response) => {
+
+
   const sig = req.headers["stripe-signature"] as string | undefined;
   const webhookSecret = config.STRIPE_WEBHOOK_SECRET;
 
@@ -113,11 +143,43 @@ export const handleStripeWebhook = async (req: Request, res: Response) => {
     const plan = await PricingModel.findById(pricingPlanId);
     if (!plan) throw new ApiError(httpStatus.NOT_FOUND, "Pricing plan not found");
 
+
+    if (plan.type === "recurring") {
+
+
+      const existing = await subscriptionModel.findOne({
+        userId,
+        isRecurring: true,
+        status: "active",
+      });
+
+      const stripeSubscriptions = await stripe.subscriptions.list({
+        customer: existing?.stripeCustomerId, // stripe customer's ID
+        status: "active",
+      });
+      if (stripeSubscriptions.data.length > 0) {
+        return res.status(400).json({
+          message: "You already have an active subscription.",
+        });
+      }
+
+
+      if (existing) {
+        return res.status(400).json({
+          message: "You already have an active subscription.",
+        });
+      }
+    }
+
+
+
     // ❌ If recurring, skip processing here — it's handled in `invoice.paid`
     if (plan.type === "recurring") {
       console.log("ℹ️ Recurring plan detected. Skipping processing in checkout.session.completed. Handled in invoice.paid.");
       return res.status(200).send();
     }
+
+
 
     // ✅ One-time payment processing
     const sessionDb = await mongoose.startSession();
@@ -150,21 +212,16 @@ export const handleStripeWebhook = async (req: Request, res: Response) => {
         isRecurring: false,
       }], { session: sessionDb });
 
-      // Add tokens to user's account
-      await User.findByIdAndUpdate(
-        userId,
-        { $inc: { token: plan.token } },
-        { new: true, session: sessionDb }
-      );
+
 
       const user = await User.findById(userId).session(sessionDb);
       const previousToken = user?.token || 0;
       const newToken = previousToken + plan.token;
 
       await tokenLogModel.create([{
-        userId,
+        user: userId,
         source: "one_time",
-        planId: pricingPlanId,
+        plan: pricingPlanId,
         tokenAdded: plan.token,
         newToken,
         previousToken,
@@ -172,7 +229,12 @@ export const handleStripeWebhook = async (req: Request, res: Response) => {
         note: "One-time token purchase"
       }], { session: sessionDb });
 
-
+      // Add tokens to user's account
+      await User.findByIdAndUpdate(
+        userId,
+        { $inc: { token: plan.token } },
+        { new: true, session: sessionDb }
+      );
       await sessionDb.commitTransaction();
     } catch (error) {
       await sessionDb.abortTransaction();
@@ -235,21 +297,17 @@ export const handleStripeWebhook = async (req: Request, res: Response) => {
         isRecurring: true,
       }], { session: sessionDb });
 
-      // Add tokens to user's account on each successful renewal
-      await User.findByIdAndUpdate(
-        userId,
-        { $inc: { token: plan.token } },
-        { new: true, session: sessionDb }
-      );
+
 
       const user = await User.findById(userId).session(sessionDb);
       const previousToken = user?.token || 0;
       const newToken = previousToken + plan.token;
 
+
       await tokenLogModel.create([{
-        userId,
+        user: userId,
         source: "subscription",
-        planId: pricingPlanId,
+        plan: pricingPlanId,
         tokenAdded: plan.token,
         newToken,
         previousToken,
@@ -257,6 +315,13 @@ export const handleStripeWebhook = async (req: Request, res: Response) => {
         note: "Recurring token renewal"
       }], { session: sessionDb });
 
+
+      // Add tokens to user's account on each successful renewal
+      await User.findByIdAndUpdate(
+        userId,
+        { $inc: { token: plan.token } },
+        { new: true, session: sessionDb }
+      );
 
       await sessionDb.commitTransaction();
     } catch (error) {
@@ -311,21 +376,21 @@ export const getSingleTransaction = catchAsync(async (req: Request, res: Respons
 
 
 
-// export const cancelSubscription = async (req: Request, res: Response) => {
-//   const { subscriptionId } = req.body;
+export const cancelSubscription = async (req: Request, res: Response) => {
+  const { subscriptionId } = req.body;
 
-//   const subscription = await subscriptionModel.findOne({
-//     stripeSubscriptionId: subscriptionId,
-//   });
-//   if (!subscription)
-//     return res.status(404).json({ message: "Subscription not found" });
+  const subscription = await subscriptionModel.findOne({
+    stripeSubscriptionId: subscriptionId,
+  });
+  if (!subscription)
+    return res.status(404).json({ message: "Subscription not found" });
 
-//   await stripe.subscriptions.cancel(subscriptionId);
-//   subscription.status = "canceled";
-//   await subscription.save();
+  await stripe.subscriptions.cancel(subscriptionId);
+  subscription.status = "canceled";
+  await subscription.save();
 
-//   res.json({ message: "Subscription canceled" });
-// };
+  res.json({ message: "Subscription canceled" });
+};
 
 // export const checkSubscription = async (
 //   req: Request,

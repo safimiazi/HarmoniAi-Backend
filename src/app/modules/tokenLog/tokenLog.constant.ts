@@ -1,1 +1,1 @@
-export const TOKENLOG_SEARCHABLE_FIELDS = [];
+export const TOKENLOG_SEARCHABLE_FIELDS = ["source"];

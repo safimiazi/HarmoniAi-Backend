@@ -43,16 +43,11 @@ const updateUserProfile = catchAsync(async (req, res) => {
   // 🔒 Filter only allowed fields
   const updatePayload: Partial<any> = {};
   for (const key of allowedFields) {
-    console.log(key , allowedFields)
     if (req.body[key] !== undefined) {
       updatePayload[key] = req.body[key];
     }
   }
 
-
-  console.log(updatePayload);
-
-  return 
   const updatedUser = await updateUserProfileService(userId, updatePayload);
 
   res.status(httpStatus.OK).json({

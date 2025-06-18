@@ -1,6 +1,7 @@
 import express from "express";
 import {
 
+  cancelSubscription,
   createCheckoutSession,
   getMyTransactions,
   getSingleTransaction,
@@ -21,7 +22,7 @@ router.get(
   getMyTransactions
 );
 
-// router.post("/cancel-subscription", cancelSubscription);
+router.post("/cancel-subscription", cancelSubscription);
 
 // router.get("/subscription-status", getSubscriptionStatus);
 

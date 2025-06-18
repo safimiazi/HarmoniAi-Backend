@@ -6,6 +6,7 @@ import { cartRoutes } from "../modules/cart/cart.routes";
 import { PricingRoutes } from "../modules/Pricing/Pricing.routes";
 import { subscriptionRoutes } from "../modules/subscription/subscription.routes";
 import { configureRoutes } from "../modules/configure/configure.routes";
+import { tokenLogRoutes } from "../modules/tokenLog/tokenLog.routes";
 
 const router = Router();
 
@@ -25,6 +26,10 @@ const moduleRoutes = [
   {
     path: "/cart",
     route: cartRoutes,
+  },
+  {
+    path: "/token-log",
+    route: tokenLogRoutes,
   },
   {
     path: "/users",

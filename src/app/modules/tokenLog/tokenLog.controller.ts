@@ -4,10 +4,7 @@ import sendResponse from "../../utils/sendResponse";
 import status from "http-status";
 import { catchAsync } from "../../utils/catchAsync";
 
-const postTokenLog = catchAsync(async (req: Request, res: Response) => {
-  const result = await tokenLogService.postTokenLogIntoDB(req.body);
-  sendResponse(res, { statusCode: status.CREATED, success: true, message: "Created successfully", data: result });
-});
+
 
 const getAllTokenLog = catchAsync(async (req: Request, res: Response) => {
   const result = await tokenLogService.getAllTokenLogFromDB(req.query);
@@ -19,10 +16,6 @@ const getSingleTokenLog = catchAsync(async (req: Request, res: Response) => {
   sendResponse(res, { statusCode: status.OK, success: true, message: "Fetched successfully", data: result });
 });
 
-const updateTokenLog = catchAsync(async (req: Request, res: Response) => {
-  const result = await tokenLogService.updateTokenLogIntoDB(req.body);
-  sendResponse(res, { statusCode: status.OK, success: true, message: "Updated successfully", data: result });
-});
 
 const deleteTokenLog = catchAsync(async (req: Request, res: Response) => {
   await tokenLogService.deleteTokenLogFromDB(req.params.id);
@@ -30,4 +23,4 @@ const deleteTokenLog = catchAsync(async (req: Request, res: Response) => {
 });
 
 
-export const tokenLogController = { postTokenLog, getAllTokenLog, getSingleTokenLog, updateTokenLog, deleteTokenLog };
+export const tokenLogController = { getAllTokenLog, getSingleTokenLog, deleteTokenLog };

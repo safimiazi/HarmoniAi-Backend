@@ -35,6 +35,7 @@ export const PricingService = {
         // 1. Create Stripe product
         const stripeProduct = await stripe.products.create({
           name: data.name,
+          
         });
 
         // 2. Create Stripe recurring price
