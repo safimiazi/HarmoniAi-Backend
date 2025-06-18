@@ -3,6 +3,9 @@ import { cartService } from "./cart.service";
 import sendResponse from "../../utils/sendResponse";
 import status from "http-status";
 import { catchAsync } from "../../utils/catchAsync";
+import { User } from "../user/user.model";
+import ApiError from "../../errors/ApiError";
+import httpStatus from "http-status";
 
 const postCart = catchAsync(async (req: Request, res: Response) => {
   const { userId } = req.loggedInUser;
@@ -62,10 +65,75 @@ const deleteCart = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const getAddress = catchAsync(async (req: Request, res: Response) => {
+  const { userId } = req.loggedInUser;
+  const user = await User.findById(userId).select('addresses');
+
+  if (!user) {
+    throw new ApiError(httpStatus.NOT_FOUND, "User not found.")
+  }
+
+  sendResponse(res, {
+    statusCode: status.OK,
+    success: true,
+    message: "Address get successfully",
+    data: user?.addresses || [],
+  });
+});
+
+const postAddress = catchAsync(async (req: Request, res: Response) => {
+  const { userId } = req.loggedInUser;
+
+  const user = await User.findById(userId).select('addresses');
+
+  if (!user) {
+    throw new ApiError(httpStatus.NOT_FOUND, "User not found.")
+  }
+  const addAddress = await User.findByIdAndUpdate(
+    userId,
+    { $push: { addresses: req.body } },
+    { new: true }
+  ).select('addresses');
+
+  sendResponse(res, {
+    statusCode: status.OK,
+    success: true,
+    message: "Address added successfully",
+    data: addAddress?.addresses,
+  });
+});
+
+
+const updateAddress = catchAsync(async (req: Request, res: Response) => {
+  const { userId } = req.loggedInUser;
+  const addressId = req.params.id
+
+  const user = await User.findById(userId).select('addresses');
+
+  if (!user) {
+    throw new ApiError(httpStatus.NOT_FOUND, "User not found.")
+  }
+
+  // find the address by its _id:
+  const address = (user.addresses as any).id(addressId)
+  Object.assign(address, req.body);
+  await user.save();
+
+  sendResponse(res, {
+    statusCode: status.OK,
+    success: true,
+    message: "Address updated successfully",
+    data: null,
+  });
+});
+
 export const cartController = {
   postCart,
   getAllCart,
   getSingleCart,
   updateCart,
   deleteCart,
+  getAddress,
+  postAddress,
+  updateAddress
 };

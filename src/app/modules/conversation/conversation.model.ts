@@ -66,6 +66,17 @@ const MessageSchema = new Schema<TMessage>(
       ),
       default: null, // 👉 Default null if not provided
     },
+    modelInfo: {
+      modelName: String,
+      version: String,
+      input: {
+        type: Schema.Types.Mixed,
+        default: null
+      },
+      webhookUrl: String,
+    },
+    intend: String,
+    runtime: Number,
     price: { type: Number, required: true, min: 0 },
     chatId: {
       type: Schema.Types.ObjectId,

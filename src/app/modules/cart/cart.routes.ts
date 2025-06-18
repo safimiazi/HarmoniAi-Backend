@@ -4,6 +4,7 @@ import { cartPostValidation, cartUpdateValidation } from "./cart.validation";
 import { validateRequest } from "../../middleWear/validateRequest";
 import auth from "../../middleWear/auth";
 import USER_ROLE from "../../constants/userRole";
+import { addressValidationSchema } from "../user/user.validation";
 
 const router = express.Router();
 
@@ -34,6 +35,25 @@ router.delete(
   "/delete-cart/:id",
   auth(USER_ROLE.ADMIN, USER_ROLE.USER),
   cartController.deleteCart
+);
+
+
+router.get(
+  "/get-address",
+  auth(USER_ROLE.ADMIN, USER_ROLE.USER),
+  cartController.getAddress
+);
+router.post(
+  "/post-address",
+  auth(USER_ROLE.ADMIN, USER_ROLE.USER),
+  validateRequest(addressValidationSchema),
+  cartController.postAddress
+);
+
+router.put(
+  "/update-address/:id",
+  auth(USER_ROLE.ADMIN, USER_ROLE.USER),
+  cartController.updateAddress
 );
 
 export const cartRoutes = router;

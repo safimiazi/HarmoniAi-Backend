@@ -42,6 +42,16 @@ const getAllConversations = catchAsync(async (req: Request, res: Response) => {
     data: result,
   });
 });
+const getAllMessage = catchAsync(async (req: Request, res: Response) => {
+  // const { userId } = req.loggedInUser;
+  const result = await conversationService.getAllMessageFromDB(req.query);
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "All your messages have been retrieved successfully.",
+    data: result,
+  });
+});
 
 const getMessagesFromConversation = catchAsync(
   async (req: Request, res: Response) => {
@@ -88,6 +98,7 @@ const changeConversationName = catchAsync(
 export const conversationController = {
   getAllConversations,
   createConversartion,
+  getAllMessage,
   addAMessage,
   getMessagesFromConversation,
   deleteConversation,

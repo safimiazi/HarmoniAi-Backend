@@ -8,6 +8,10 @@ const cartSchema = new mongoose.Schema<ICart>(
       ref: "User",
       required: true,
     },
+    productId: {
+      type: String,
+      require: true
+    },
 
     title: {
       type: String,
@@ -31,7 +35,6 @@ const cartSchema = new mongoose.Schema<ICart>(
     },
     quantity: {
       type: Number,
-      default: 1,
       min: 1,
     },
 

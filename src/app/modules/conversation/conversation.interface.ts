@@ -21,18 +21,26 @@ export type TResponse = {
 };
 
 export type TMessage = {
-  
+
   userId: Types.ObjectId;
   chatId: Types.ObjectId;
   prompt: TPrompt[];
   enhancedPrompt?: string;
   response: TResponse[];
   price: number;
-  model: any
+  model: any;
+  modelInfo: {
+    modelName: string,
+    version: string,
+    input: Record<string, any>,
+    webhookUrl: string,
+  },
+  intend: string,
+  runtime: Number,
 };
 
 export type TConversation = {
-  platform : string;
+  platform: string;
   name: string;
   userId: Types.ObjectId;
   chat: Types.ObjectId[];

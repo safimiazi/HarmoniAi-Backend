@@ -13,7 +13,6 @@ const addressSchema = new Schema(
     postalCode: { type: String },
     country: { type: String, required: true },
   },
-  { _id: false }
 );
 
 const userSchema = new Schema<TUser>(

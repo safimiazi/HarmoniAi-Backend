@@ -26,9 +26,24 @@ const deleteUserValidationSchema = z.object({
   }),
 });
 
+export const addressValidationSchema = z.object({
+  body: z.object({
+    label: z.string().min(1, "Label is required"), // e.g., "Home", "Office"
+    addressLine1: z.string().min(1, "Address Line 1 is required"),
+    addressLine2: z.string().optional(),
+    city: z.string().min(1, "City is required"),
+    state: z.string().optional(),
+    postalCode: z.string().optional(),
+    country: z.string().min(1, "Country is required"),
+  }),
+});
+
+
+
 export const UserValidations = {
   createUserValidationSchema,
   changeLanguageValidationSchema,
   changeThemeValidationSchema,
   deleteUserValidationSchema,
+  addressValidationSchema
 };

@@ -29,6 +29,12 @@ router.get(
 );
 
 router.get(
+  "/get-all-message",
+  auth(USER_ROLE.ADMIN, USER_ROLE.USER),
+  conversationController.getAllMessage
+);
+
+router.get(
   "/:conversationId",
   // auth(USER_ROLE.ADMIN, USER_ROLE.USER),
   conversationController.getMessagesFromConversation

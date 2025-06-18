@@ -32,7 +32,7 @@ export const cartService = {
         .paginate()
         .fields();
 
-      const result = await service_query.modelQuery;
+      const result = await service_query.modelQuery.populate("userId");
       const meta = await service_query.countTotal();
       return {
         result,
@@ -60,7 +60,6 @@ export const cartService = {
         throw new ApiError(status.NOT_FOUND, "cart is already deleted");
       }
 
-      console.log("dagta", data)
       const result = await cartModel.updateOne({ _id: id, userId }, data, {
         new: true,
       });

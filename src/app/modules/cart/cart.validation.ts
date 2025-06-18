@@ -2,6 +2,7 @@ import { z } from "zod";
 
 export const cartPostValidation = z.object({
   body: z.object({
+    productId: z.string(),
     title: z.string().min(1),
     description: z.string().optional(),
     type: z.enum(["image", "video"]),

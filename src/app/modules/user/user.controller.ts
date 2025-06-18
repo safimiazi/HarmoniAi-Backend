@@ -34,7 +34,6 @@ const updateUserProfile = catchAsync(async (req, res) => {
     "shoeSize",
     "photo",
     "omuzUsername",
-    "addresses",
     "phoneNumber",
     "identificationNumber",
     "theme"

@@ -24,7 +24,7 @@ const moduleRoutes = [
     route: configureRoutes,
   },
   {
-    path: "/cart",
+    path: "/shop",
     route: cartRoutes,
   },
   {
