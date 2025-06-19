@@ -31,7 +31,11 @@ export const updateUserProfileService = async (
 
 
 const getAllUsersFromDB = async (query: any) => {
-  const service_query = new QueryBuilder(User.find(), query)
+  let baseFilter : any = {};
+  if(query.isVerified !== undefined){
+    baseFilter.isVerified = query.isVerified || true
+  }
+  const service_query = new QueryBuilder(User.find(baseFilter), query)
     .search(USER_SEARCHABLE_FIELDS)
     .filter()
     .sort()
