@@ -50,14 +50,7 @@ const getAllUsersFromDB = async (query: any) => {
   };
 };
 
-const getSingleUserFromDB = async (id: string) => {
-  const user = await User.findOne({
-    _id: id,
-    isDeleted: false,
-  });
-  if (!user) throw new ApiError(httpStatus.FORBIDDEN, "User not Found!");
-  return user;
-};
+
 
 const getMeFromDB = async (user: JwtPayload) => {
   const existingUser = await User.findOne({
@@ -197,7 +190,6 @@ const toggleUserDeleteInDB = async (id: string, deleted: boolean) => {
 };
 
 export const UserServices = {
-  getSingleUserFromDB,
   getMeFromDB,
   getAllUsersFromDB,
   createAUserIntoDB,

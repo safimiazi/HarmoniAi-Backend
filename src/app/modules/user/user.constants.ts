@@ -40,6 +40,7 @@ export const LANGUAGE: TLanguage[] = [
   "Urdu",
   "Vietnamese",
   "Yoruba",
+  
 ];
 
 

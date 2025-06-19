@@ -38,22 +38,22 @@ router.delete(
 );
 
 
-router.get(
-  "/get-address",
-  auth(USER_ROLE.ADMIN, USER_ROLE.USER),
-  cartController.getAddress
-);
-router.post(
-  "/post-address",
-  auth(USER_ROLE.ADMIN, USER_ROLE.USER),
-  validateRequest(addressValidationSchema),
-  cartController.postAddress
-);
+// router.get(
+//   "/get-address",
+//   auth(USER_ROLE.ADMIN, USER_ROLE.USER),
+//   cartController.getAddress
+// );
+// router.post(
+//   "/post-address",
+//   auth(USER_ROLE.ADMIN, USER_ROLE.USER),
+//   validateRequest(addressValidationSchema),
+//   cartController.postAddress
+// );
 
-router.put(
-  "/update-address/:id",
-  auth(USER_ROLE.ADMIN, USER_ROLE.USER),
-  cartController.updateAddress
-);
+// router.put(
+//   "/update-address/:id",
+//   auth(USER_ROLE.ADMIN, USER_ROLE.USER),
+//   cartController.updateAddress
+// );
 
 export const cartRoutes = router;

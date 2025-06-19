@@ -1,14 +1,14 @@
 import express from "express";
 import { UserControllers } from "./user.controller";
 import { validateRequest } from "../../middleWear/validateRequest";
-import { UserValidations } from "./user.validation";
+import { addressValidationSchema, UserValidations } from "./user.validation";
 import auth from "../../middleWear/auth";
 import USER_ROLE from "../../constants/userRole";
 import { upload } from "../../utils/sendFileToCloudinary";
+import { cartController } from "../cart/cart.controller";
 
 const router = express.Router();
 
-router.get("/single/:id", UserControllers.getSingleUser);
 router.get("/", auth(USER_ROLE.ADMIN), UserControllers.getAllUsers);
 router.get("/me", auth(USER_ROLE.USER, USER_ROLE.ADMIN), UserControllers.getMe);
 router.post(
@@ -20,7 +20,6 @@ router.put('/update-profile', auth(USER_ROLE.ADMIN, USER_ROLE.USER), UserControl
 
 router.post("/verify", UserControllers.verifyOTP);
 router.post("/resend-verification", UserControllers.resendVerificationCode);
-router.get("/all-user", auth(USER_ROLE.ADMIN), UserControllers.getAllUsers)
 
 router.post(
   "/upload-image",
@@ -47,6 +46,24 @@ router.patch(
   auth(USER_ROLE.ADMIN),
   validateRequest(UserValidations.deleteUserValidationSchema),
   UserControllers.toggleUserDelete
+);
+
+router.get(
+  "/get-address",
+  auth(USER_ROLE.ADMIN, USER_ROLE.USER),
+  cartController.getAddress
+);
+router.post(
+  "/post-address",
+  auth(USER_ROLE.ADMIN, USER_ROLE.USER),
+  validateRequest(addressValidationSchema),
+  cartController.postAddress
+);
+
+router.put(
+  "/update-address/:id",
+  auth(USER_ROLE.ADMIN, USER_ROLE.USER),
+  cartController.updateAddress
 );
 
 export const UserRoutes = router;

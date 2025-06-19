@@ -57,16 +57,7 @@ const updateUserProfile = catchAsync(async (req, res) => {
 });
 
 
-const getSingleUser = catchAsync(async (req, res) => {
-  const { id } = req.params;
-  const result = await UserServices.getSingleUserFromDB(id);
-  sendResponse(res, {
-    statusCode: httpStatus.OK,
-    success: true,
-    message: "User details retrieved successfully.",
-    data: result,
-  });
-});
+
 
 const getMe = catchAsync(async (req, res) => {
   const result = await UserServices.getMeFromDB(req.loggedInUser);
@@ -239,7 +230,6 @@ const resendVerificationCode = catchAsync(async (req, res) => {
 
 
 export const UserControllers = {
-  getSingleUser,
   verifyOTP,
   updateUserProfile,
   getMe,
