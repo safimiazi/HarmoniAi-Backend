@@ -18,7 +18,7 @@ const getAllUsers = catchAsync(async (req, res) => {
   });
 });
 const updateUserProfile = catchAsync(async (req, res) => {
-   const userId = req.loggedInUser.userId;
+  const userId = req.loggedInUser.userId;
 
 
   // ✅ Allowed fields to update
@@ -135,6 +135,7 @@ const toggleUserDelete = catchAsync(async (req, res) => {
 });
 
 
+
 const verifyOTP = catchAsync(async (req, res) => {
   const { email, code } = req.body;
 
@@ -227,10 +228,37 @@ const resendVerificationCode = catchAsync(async (req, res) => {
 });
 
 
+const deleteAddress = catchAsync(async (req, res) => {
+  const { userId } = req.loggedInUser;
+  const addressId = req.params.id
 
+  const user = await User.findById(userId).select('addresses');
+
+  if (!user) {
+    throw new ApiError(httpStatus.NOT_FOUND, "User not found.")
+  }
+
+  // find the address by its _id:
+  const address = (user.addresses as any).id(addressId)
+
+  if (!address) {
+    throw new ApiError(httpStatus.NOT_FOUND, "address not found")
+  }
+  address.remove();
+  await user.save()
+
+  await user.save();
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Address deleted successfully",
+    data: null,
+  });
+});
 
 export const UserControllers = {
   verifyOTP,
+  deleteAddress,
   updateUserProfile,
   getMe,
   resendVerificationCode,

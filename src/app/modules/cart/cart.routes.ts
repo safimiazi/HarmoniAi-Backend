@@ -16,8 +16,13 @@ router.post(
 );
 router.get(
   "/get-all-cart",
-  auth(USER_ROLE.ADMIN, USER_ROLE.USER),
+  auth(USER_ROLE.USER),
   cartController.getAllCart
+);
+router.get(
+  "/admin-get-all-user-cart",
+  auth(USER_ROLE.ADMIN),
+  cartController.adminGetAllUserCart
 );
 router.get(
   "/get-single-cart/:id",

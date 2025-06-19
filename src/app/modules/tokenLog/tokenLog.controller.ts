@@ -10,6 +10,12 @@ const getAllTokenLog = catchAsync(async (req: Request, res: Response) => {
   const result = await tokenLogService.getAllTokenLogFromDB(req.query);
   sendResponse(res, { statusCode: status.OK, success: true, message: "Fetched successfully", data: result });
 });
+const UserGetHerTokenLog = catchAsync(async (req: Request, res: Response) => {
+    const { userId } = req.loggedInUser;
+
+  const result = await tokenLogService.UserGetHerTokenLogFromDB(req.query , userId);
+  sendResponse(res, { statusCode: status.OK, success: true, message: "Fetched successfully", data: result });
+});
 
 const getSingleTokenLog = catchAsync(async (req: Request, res: Response) => {
   const result = await tokenLogService.getSingleTokenLogFromDB(req.params.id);
@@ -23,4 +29,4 @@ const deleteTokenLog = catchAsync(async (req: Request, res: Response) => {
 });
 
 
-export const tokenLogController = { getAllTokenLog, getSingleTokenLog, deleteTokenLog };
+export const tokenLogController = { getAllTokenLog, getSingleTokenLog, deleteTokenLog,UserGetHerTokenLog};

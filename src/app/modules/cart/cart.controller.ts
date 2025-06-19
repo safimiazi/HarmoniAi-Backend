@@ -29,6 +29,16 @@ const getAllCart = catchAsync(async (req: Request, res: Response) => {
     data: result,
   });
 });
+const adminGetAllUserCart = catchAsync(async (req: Request, res: Response) => {
+
+  const result = await cartService.adminGetAllUserCartFromDB(req.query);
+  sendResponse(res, {
+    statusCode: status.OK,
+    success: true,
+    message: "Fetched successfully",
+    data: result,
+  });
+});
 
 const getSingleCart = catchAsync(async (req: Request, res: Response) => {
   const { userId } = req.loggedInUser;
@@ -130,6 +140,7 @@ const updateAddress = catchAsync(async (req: Request, res: Response) => {
 export const cartController = {
   postCart,
   getAllCart,
+  adminGetAllUserCart,
   getSingleCart,
   updateCart,
   deleteCart,

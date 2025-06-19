@@ -32,9 +32,35 @@ export const tokenLogService = {
       throw error;
     }
   },
+  async UserGetHerTokenLogFromDB(query: any, userId: string) {
+    try {
+
+      const service_query = new QueryBuilder(tokenLogModel.find({user: userId}), query)
+        .search(TOKENLOG_SEARCHABLE_FIELDS)
+        .filter()
+        .sort()
+        .paginate()
+        .fields();
+
+      const result = await service_query.modelQuery.populate("user").populate("plan");
+      const meta = await service_query.countTotal();
+      return {
+        result,
+        meta,
+      };
+
+    } catch (error: unknown) {
+      throw error;
+    }
+  },
+
+
   async getSingleTokenLogFromDB(id: string) {
     try {
       const result = await tokenLogModel.findById(id).populate("user").populate("plan");
+      if(!result){
+        throw new ApiError(httpStatus.NOT_FOUND, "Data not found")
+      }
       if (result?.isDeleted) {
         throw new ApiError(httpStatus.NOT_FOUND, "Data already deleted!")
       }

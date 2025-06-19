@@ -42,6 +42,25 @@ export const cartService = {
       throw error;
     }
   },
+  async adminGetAllUserCartFromDB(query: any) {
+    try {
+      const service_query = new QueryBuilder(cartModel.find(), query)
+        .search(CART_SEARCHABLE_FIELDS)
+        .filter()
+        .sort()
+        .paginate()
+        .fields();
+
+      const result = await service_query.modelQuery.populate("userId");
+      const meta = await service_query.countTotal();
+      return {
+        result,
+        meta,
+      };
+    } catch (error: unknown) {
+      throw error;
+    }
+  },
   async getSingleCartFromDB(id: string, userId: string) {
     try {
       return await cartModel.findOne({

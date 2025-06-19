@@ -65,5 +65,10 @@ router.put(
   auth(USER_ROLE.ADMIN, USER_ROLE.USER),
   cartController.updateAddress
 );
+router.put(
+  "/delete-address/:id",
+  auth(USER_ROLE.ADMIN, USER_ROLE.USER),
+  UserControllers.deleteAddress
+);
 
 export const UserRoutes = router;
