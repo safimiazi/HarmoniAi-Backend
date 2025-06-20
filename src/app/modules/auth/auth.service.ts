@@ -178,7 +178,7 @@ const forgetPassword = async (email: string) => {
       config.jwt_access_secret as string,
       1000 * 60 * 10 // 10 minutes
     );
-    const resetUILink = `${config.CLIENT_URL}?id=${user._id}&token=${resetToken}`;
+    const resetUILink = `${config.CLIENT_URL}/reset-password/${user._id}/${resetToken}`;
     sendEmail(user?.email, resetUILink);
   } catch (error) {
     throw new Error
