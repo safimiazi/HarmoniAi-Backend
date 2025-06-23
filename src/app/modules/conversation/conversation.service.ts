@@ -157,6 +157,34 @@ const getMessagesFromConversationFromDB = async (conversationId: string) => {
   return conversation;
 };
 
+const getMessagesFromConversationInfiniteScrollFromDB = async (conversationId: string,
+  page: number,
+  limit: number) => {
+  const conversation = await Conversation.findById(conversationId);
+  if (!conversation) {
+    throw new ApiError(404, "Conversation not found");
+  };
+
+  const totalMessages = await Message.countDocuments({ chatId: conversationId });
+
+  const messages = await Message.find({ chatId: conversationId })
+    .sort({ createdAt: -1 })
+    .skip((page - 1) * limit)
+    .limit(limit)
+    .populate({
+      path: "userId",
+      select: "_id name email"
+    })
+
+  const hasMore = (page * limit) < totalMessages;
+  return {
+    messages,
+    total: totalMessages,
+    hasMore,
+    currentPage: page
+  }
+}
+
 const deleteConversationFromDB = async (id: string) => {
   const existing = await Conversation.findById(id);
   if (!existing) {
@@ -179,6 +207,7 @@ export const conversationService = {
   getAllMessageFromDB,
   getAllConversationsFromDB,
   getMessagesFromConversationFromDB,
+  getMessagesFromConversationInfiniteScrollFromDB,
   deleteConversationFromDB,
   changeConversationNameIntoDB,
 };

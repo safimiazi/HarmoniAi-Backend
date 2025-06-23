@@ -68,6 +68,25 @@ const getMessagesFromConversation = catchAsync(
   }
 );
 
+const getMessagesFromConversationWithInfiniteScroll = catchAsync(async(req: Request, res: Response) => {
+  const { conversationId} = req.params;
+  const {page, limit} = req.query;
+  const pageNumber = parseInt(page as string, 10);
+  const limitNumber = parseInt(limit as string, 10);
+
+  const result = await conversationService.getMessagesFromConversationInfiniteScrollFromDB(
+    conversationId,
+    pageNumber,
+    limitNumber
+  )
+    sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Messages fetched successfully with pagination.",
+    data: result,
+  });
+})
+
 const deleteConversation = catchAsync(async (req: Request, res: Response) => {
   const { conversationId } = req.params;
   await conversationService.deleteConversationFromDB(conversationId);
@@ -101,6 +120,7 @@ export const conversationController = {
   getAllMessage,
   addAMessage,
   getMessagesFromConversation,
+  getMessagesFromConversationWithInfiniteScroll,
   deleteConversation,
   changeConversationName,
 };

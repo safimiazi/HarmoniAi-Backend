@@ -7,6 +7,72 @@ import ApiError from "../../errors/ApiError";
 import config from "../../config";
 import { createToken } from "../auth/auth.utils";
 import { sendVerificationEmail } from "../../utils/sendVerificationEmail";
+import { subscriptionModel } from "../subscription/subscription.model";
+import type { Request, Response } from "express";
+
+export const getDashboardStats = async (req: Request, res: Response) => {
+  const userCount = await User.countDocuments({
+    isDeleted: false,
+    role: { $ne: "admin" }
+  });
+  const recurringActiveCount = await subscriptionModel.countDocuments({
+    status: 'active',
+    isRecurring: true,
+  });
+
+  const oneTimeActiveCount = await subscriptionModel.countDocuments({
+    status: 'active',
+    isRecurring: false,
+  });
+
+  const totalActiveSubscriptions = await subscriptionModel.countDocuments({ status: 'active' });
+
+
+  const [recurringReveneueAgg, oneTimeRevenueAgg] = await Promise.all([
+    subscriptionModel.aggregate([
+      { $match: { status: 'active', isRecurring: true } },
+      {
+        $group: {
+          _id: null,
+          total: { $sum: "$amountPaid" }
+        }
+      }
+    ]),
+    subscriptionModel.aggregate([
+      { $match: { status: 'active', isRecurring: false } },
+      {
+        $group: {
+          _id: null,
+          total: { $sum: "$amountPaid" }
+        }
+      }
+    ])
+  ])
+
+  const recurringRevenue = recurringReveneueAgg[0]?.total || 0;
+  const oneTimeRevenue = oneTimeRevenueAgg[0]?.total || 0;
+
+  const totalRevenue = recurringRevenue + oneTimeRevenue;
+
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Dashboard stats fetched",
+    data: {
+      userCount,
+      subscriptionCount: {
+        total: totalActiveSubscriptions,
+        recurring: recurringActiveCount,
+        oneTime: oneTimeActiveCount,
+      }, revenue: {
+        total: totalRevenue,
+        recurring: recurringRevenue,
+        oneTime: oneTimeRevenue,
+      },
+    },
+  });
+};
 
 const getAllUsers = catchAsync(async (req, res) => {
   const result = await UserServices.getAllUsersFromDB(req.query);
@@ -19,6 +85,44 @@ const getAllUsers = catchAsync(async (req, res) => {
 });
 const updateUserProfile = catchAsync(async (req, res) => {
   const userId = req.loggedInUser.userId;
+
+
+  // ✅ Allowed fields to update
+  const allowedFields = [
+    "name",
+    "image",
+    "region",
+    "language",
+    "gender",
+    "age",
+    "height",
+    "size",
+    "shoeSize",
+    "photo",
+    "omuzUsername",
+    "phoneNumber",
+    "identificationNumber",
+    "theme"
+  ];
+
+  // 🔒 Filter only allowed fields
+  const updatePayload: Partial<any> = {};
+  for (const key of allowedFields) {
+    if (req.body[key] !== undefined) {
+      updatePayload[key] = req.body[key];
+    }
+  }
+
+  const updatedUser = await updateUserProfileService(userId, updatePayload);
+
+  res.status(httpStatus.OK).json({
+    success: true,
+    message: "Profile updated successfully",
+    data: updatedUser,
+  });
+});
+const adminUpdateUserProfile = catchAsync(async (req, res) => {
+  const userId = req.params.id;
 
 
   // ✅ Allowed fields to update
@@ -260,6 +364,7 @@ export const UserControllers = {
   verifyOTP,
   deleteAddress,
   updateUserProfile,
+  adminUpdateUserProfile,
   getMe,
   resendVerificationCode,
   getAllUsers,

@@ -1,5 +1,5 @@
 import express from "express";
-import { UserControllers } from "./user.controller";
+import { getDashboardStats, UserControllers } from "./user.controller";
 import { validateRequest } from "../../middleWear/validateRequest";
 import { addressValidationSchema, UserValidations } from "./user.validation";
 import auth from "../../middleWear/auth";
@@ -9,7 +9,7 @@ import { cartController } from "../cart/cart.controller";
 
 const router = express.Router();
 
-router.get("/", auth(USER_ROLE.ADMIN), UserControllers.getAllUsers);
+
 router.get("/me", auth(USER_ROLE.USER, USER_ROLE.ADMIN), UserControllers.getMe);
 router.post(
   "/register",
@@ -17,6 +17,7 @@ router.post(
   UserControllers.createAUser
 );
 router.put('/update-profile', auth(USER_ROLE.ADMIN, USER_ROLE.USER), UserControllers.updateUserProfile);
+router.put('/admin-update-profile/:id', auth(USER_ROLE.USER), UserControllers.adminUpdateUserProfile);
 
 router.post("/verify", UserControllers.verifyOTP);
 router.post("/resend-verification", UserControllers.resendVerificationCode);
@@ -41,12 +42,7 @@ router.patch(
   UserControllers.changeUserTheme
 );
 
-router.patch(
-  "/delete/:id",
-  auth(USER_ROLE.ADMIN),
-  validateRequest(UserValidations.deleteUserValidationSchema),
-  UserControllers.toggleUserDelete
-);
+
 
 router.get(
   "/get-address",
@@ -71,4 +67,15 @@ router.put(
   UserControllers.deleteAddress
 );
 
+
+
+// admin dashboard routes:
+router.get('/dashboard', auth(USER_ROLE.ADMIN), getDashboardStats);
+router.get("/", auth(USER_ROLE.ADMIN), UserControllers.getAllUsers);
+router.patch(
+  "/delete/:id",
+  auth(USER_ROLE.ADMIN),
+  validateRequest(UserValidations.deleteUserValidationSchema),
+  UserControllers.toggleUserDelete
+);
 export const UserRoutes = router;

@@ -39,6 +39,11 @@ router.get(
   // auth(USER_ROLE.ADMIN, USER_ROLE.USER),
   conversationController.getMessagesFromConversation
 );
+router.get(
+  "/infinite-scroll/:conversationId",
+  // auth(USER_ROLE.ADMIN, USER_ROLE.USER),
+  conversationController.getMessagesFromConversationWithInfiniteScroll
+);
 
 router.delete(
   "/delete-conversation/:conversationId",

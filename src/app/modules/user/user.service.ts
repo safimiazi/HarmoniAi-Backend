@@ -31,9 +31,10 @@ export const updateUserProfileService = async (
 
 
 const getAllUsersFromDB = async (query: any) => {
-  let baseFilter : any = {};
-  if(query.isVerified !== undefined){
+  let baseFilter: any = {};
+  if (query.isVerified !== undefined) {
     baseFilter.isVerified = query.isVerified || true
+
   }
   const service_query = new QueryBuilder(User.find(baseFilter), query)
     .search(USER_SEARCHABLE_FIELDS)
@@ -74,7 +75,7 @@ const createAUserIntoDB = async (payload: TUser) => {
     if (existingUser) {
       throw new ApiError(httpStatus.CONFLICT, "User with this email already exists");
     }
-    if(!payload.password){
+    if (!payload.password) {
       throw new ApiError(httpStatus.NOT_FOUND, "Password must be included")
     }
 
@@ -182,6 +183,9 @@ const toggleUserDeleteInDB = async (id: string, deleted: boolean) => {
   const existingUser = await User.findById(id);
   if (!existingUser)
     throw new ApiError(httpStatus.NOT_FOUND, "User not found!");
+
+
+
   return await User.findByIdAndUpdate(
     id,
     { isDeleted: deleted },
