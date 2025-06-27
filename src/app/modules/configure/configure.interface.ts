@@ -11,8 +11,6 @@ export interface IToken {
 export interface Iconfigure {
     dollerPerToken: number;
     dailyTokenLimit: number;
-    models: {
-        [key: string]: IToken;
-    }
+
 
 }
