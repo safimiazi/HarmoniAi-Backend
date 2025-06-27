@@ -72,6 +72,7 @@ router.put(
 // admin dashboard routes:
 router.get('/dashboard', auth(USER_ROLE.ADMIN), getDashboardStats);
 router.get("/", auth(USER_ROLE.ADMIN), UserControllers.getAllUsers);
+router.get("/single/:id", auth(USER_ROLE.ADMIN), UserControllers.getSingleUser);
 router.patch(
   "/delete/:id",
   auth(USER_ROLE.ADMIN),

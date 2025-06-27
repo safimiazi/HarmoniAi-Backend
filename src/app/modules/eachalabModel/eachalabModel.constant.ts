@@ -1,0 +1,1 @@
+export const EACHALABMODEL_SEARCHABLE_FIELDS = [];

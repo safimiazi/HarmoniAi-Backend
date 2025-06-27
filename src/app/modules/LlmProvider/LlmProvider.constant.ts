@@ -1,0 +1,1 @@
+export const LLMPROVIDER_SEARCHABLE_FIELDS = ["name"];

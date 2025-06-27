@@ -10,6 +10,7 @@ import { sendVerificationEmail } from "../../utils/sendVerificationEmail";
 import mongoose from 'mongoose';
 import QueryBuilder from "../../builder/QueryBuilder";
 import { USER_SEARCHABLE_FIELDS } from "./user.constants";
+import e from "cors";
 
 export const generateVerificationCode = () => {
   return Math.floor(100000 + Math.random() * 900000).toString(); // Generates a 6-digit verification code 
@@ -35,6 +36,10 @@ const getAllUsersFromDB = async (query: any) => {
   if (query.isVerified !== undefined) {
     baseFilter.isVerified = query.isVerified || true
 
+  }
+
+  if (query.isDeleted !== undefined) {
+    baseFilter.isDeleted = query.isDeleted || false;
   }
   const service_query = new QueryBuilder(User.find(baseFilter), query)
     .search(USER_SEARCHABLE_FIELDS)
@@ -193,9 +198,22 @@ const toggleUserDeleteInDB = async (id: string, deleted: boolean) => {
   );
 };
 
+
+const getSingleUser = async (id: string) => {
+  const existingUser = await User.findById(id).select("-password -verificationCode -verificationCodeExpiresAt -lastVerificationSentAt ");
+  if (!existingUser)
+    throw new ApiError(httpStatus.NOT_FOUND, "User not found!");
+
+
+  return existingUser;
+
+
+};
+
 export const UserServices = {
   getMeFromDB,
   getAllUsersFromDB,
+  getSingleUser,
   createAUserIntoDB,
   changeUserLanguage,
   changeUserTheme,

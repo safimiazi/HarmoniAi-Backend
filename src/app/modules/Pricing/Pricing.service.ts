@@ -8,21 +8,40 @@ import { stripe } from "../../utils/stripe";
 export const PricingService = {
   async postPricingIntoDB(data: any) {
     try {
-      // // Check if a pricing plan with the same name already exists
-      // const existingPricing = await PricingModel.findOne({ name: data.name, isDeleted: false });
-      // if (existingPricing) {
-      //   throw new ApiError(httpStatus.CONFLICT, "A pricing plan with this name already exists.");
-      // }
-      // return await PricingModel.create(data);
-
-      const existingPricing = await PricingModel.findOne({
+      // Prepare dynamic query for duplicate check
+      const duplicateQuery: any = {
         name: data.name,
+        type: data.type,
         isDeleted: false,
-      })
+      };
+
+      if (data.type === 'recurring') {
+        if (!data.interval || !['month', 'year'].includes(data.interval)) {
+          throw new ApiError(
+            httpStatus.BAD_REQUEST,
+            "Recurring plans require a valid interval ('month' or 'year')"
+          );
+        }
+        duplicateQuery.interval = data.interval;
+      }
+
+      const existingPricing = await PricingModel.findOne(duplicateQuery);
 
       if (existingPricing) {
-        throw new ApiError(httpStatus.CONFLICT, "A pricing plan with this name already exists.")
+        throw new ApiError(
+          httpStatus.CONFLICT,
+          'A pricing plan with this name, type, and interval already exists.'
+        );
       }
+
+      // const existingPricing = await PricingModel.findOne({
+      //   name: data.name,
+      //   isDeleted: false,
+      // })
+
+      // if (existingPricing) {
+      //   throw new ApiError(httpStatus.CONFLICT, "A pricing plan with this name already exists.")
+      // }
       //  If plan type is recurring, create Stripe Product & Price
       if (data.type === "recurring") {
         if (!data.interval || !["month", "year"].includes(data.interval)) {
@@ -35,7 +54,7 @@ export const PricingService = {
         // 1. Create Stripe product
         const stripeProduct = await stripe.products.create({
           name: data.name,
-          
+
         });
 
         // 2. Create Stripe recurring price

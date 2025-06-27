@@ -7,6 +7,9 @@ import { PricingRoutes } from "../modules/Pricing/Pricing.routes";
 import { subscriptionRoutes } from "../modules/subscription/subscription.routes";
 import { configureRoutes } from "../modules/configure/configure.routes";
 import { tokenLogRoutes } from "../modules/tokenLog/tokenLog.routes";
+import { LlmProviderRoutes } from "../modules/LlmProvider/LlmProvider.routes";
+import { LlmModelRoutes } from "../modules/LlmModel/LlmModel.routes";
+import { eachalabModelRoutes } from "../modules/eachalabModel/eachalabModel.routes";
 
 const router = Router();
 
@@ -34,6 +37,19 @@ const moduleRoutes = [
   {
     path: "/users",
     route: UserRoutes,
+  },
+  {
+    path: "/llm-provider",
+    route: LlmProviderRoutes,
+  },
+  {
+    path: "/llm-model",
+    route: LlmModelRoutes,
+  },
+
+  {
+    path: "/eachalab-model",
+    route: eachalabModelRoutes,
   },
   {
     path: "/subscriptions",

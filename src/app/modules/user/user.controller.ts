@@ -11,49 +11,65 @@ import { subscriptionModel } from "../subscription/subscription.model";
 import type { Request, Response } from "express";
 
 export const getDashboardStats = async (req: Request, res: Response) => {
-  const userCount = await User.countDocuments({
-    isDeleted: false,
-    role: { $ne: "admin" }
-  });
-  const recurringActiveCount = await subscriptionModel.countDocuments({
-    status: 'active',
-    isRecurring: true,
-  });
+  const [userCount, verifiedUserCount, unverifiedUserCount] = await Promise.all([
+    User.countDocuments({ isDeleted: false, role: { $ne: "admin" } }),
+    User.countDocuments({ isDeleted: false, role: { $ne: "admin" }, isVerified: true }),
+    User.countDocuments({ isDeleted: false, role: { $ne: "admin" }, isVerified: false }),
+  ]);
 
-  const oneTimeActiveCount = await subscriptionModel.countDocuments({
-    status: 'active',
-    isRecurring: false,
-  });
-
-  const totalActiveSubscriptions = await subscriptionModel.countDocuments({ status: 'active' });
-
+  const [recurringActiveCount, oneTimeActiveCount, totalActiveSubscriptions] = await Promise.all([
+    subscriptionModel.countDocuments({ status: 'active', isRecurring: true }),
+    subscriptionModel.countDocuments({ status: 'active', isRecurring: false }),
+    subscriptionModel.countDocuments({ status: 'active' }),
+  ]);
 
   const [recurringReveneueAgg, oneTimeRevenueAgg] = await Promise.all([
     subscriptionModel.aggregate([
       { $match: { status: 'active', isRecurring: true } },
-      {
-        $group: {
-          _id: null,
-          total: { $sum: "$amountPaid" }
-        }
-      }
+      { $group: { _id: null, total: { $sum: "$amountPaid" } } },
     ]),
     subscriptionModel.aggregate([
       { $match: { status: 'active', isRecurring: false } },
-      {
-        $group: {
-          _id: null,
-          total: { $sum: "$amountPaid" }
-        }
-      }
-    ])
-  ])
+      { $group: { _id: null, total: { $sum: "$amountPaid" } } },
+    ]),
+  ]);
 
   const recurringRevenue = recurringReveneueAgg[0]?.total || 0;
   const oneTimeRevenue = oneTimeRevenueAgg[0]?.total || 0;
-
   const totalRevenue = recurringRevenue + oneTimeRevenue;
 
+  // ✅ New: Count subscriptions per pricing plan
+  const subscriptionsPerPlan = await subscriptionModel.aggregate([
+    {
+      $match: { status: "active" },
+    },
+    {
+      $group: {
+        _id: "$pricingPlanId",
+        count: { $sum: 1 },
+      },
+    },
+    {
+      $lookup: {
+        from: "pricings", // collection name (lowercase model)
+        localField: "_id",
+        foreignField: "_id",
+        as: "planInfo",
+      },
+    },
+    {
+      $unwind: "$planInfo",
+    },
+    {
+      $project: {
+        planId: "$_id",
+        planName: "$planInfo.name",
+        usedCase: "$planInfo.usedCase",
+        count: 1,
+        _id: 0,
+      },
+    },
+  ]);
 
   sendResponse(res, {
     statusCode: httpStatus.OK,
@@ -61,18 +77,23 @@ export const getDashboardStats = async (req: Request, res: Response) => {
     message: "Dashboard stats fetched",
     data: {
       userCount,
+      verifiedUserCount,
+      unverifiedUserCount,
       subscriptionCount: {
         total: totalActiveSubscriptions,
         recurring: recurringActiveCount,
         oneTime: oneTimeActiveCount,
-      }, revenue: {
+      },
+      revenue: {
         total: totalRevenue,
         recurring: recurringRevenue,
         oneTime: oneTimeRevenue,
       },
+      subscriptionsPerPlan, // ✅ new field (array of objects)
     },
   });
 };
+
 
 const getAllUsers = catchAsync(async (req, res) => {
   const result = await UserServices.getAllUsersFromDB(req.query);
@@ -90,7 +111,6 @@ const updateUserProfile = catchAsync(async (req, res) => {
   // ✅ Allowed fields to update
   const allowedFields = [
     "name",
-    "image",
     "region",
     "language",
     "gender",
@@ -172,6 +192,18 @@ const getMe = catchAsync(async (req, res) => {
     data: result,
   });
 });
+
+const getSingleUser = catchAsync(async (req, res) => {
+  const result = await UserServices.getSingleUser(req.params.id);
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "User information retrieved successfully.",
+    data: result,
+  });
+});
+
+
 
 const createAUser = catchAsync(async (req, res) => {
 
@@ -365,6 +397,7 @@ export const UserControllers = {
   deleteAddress,
   updateUserProfile,
   adminUpdateUserProfile,
+  getSingleUser,
   getMe,
   resendVerificationCode,
   getAllUsers,

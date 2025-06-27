@@ -1,0 +1,1 @@
+export const LLMMODEL_SEARCHABLE_FIELDS = ["name", "title"];
