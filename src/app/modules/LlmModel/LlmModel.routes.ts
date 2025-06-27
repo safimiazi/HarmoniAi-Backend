@@ -17,6 +17,6 @@ router.put("/update-llm-model/:id",upload.single("thumbnail"), (req, res, next) 
     req.body = JSON.parse(req.body.data);
     next();
 }, validateRequest(LlmModelUpdateValidation), LlmModelController.updateLlmModel);
-router.delete("/delete-model/:id", LlmModelController.deleteLlmModel);
+router.delete("/delete-llm-model/:id", LlmModelController.deleteLlmModel);
 
 export const LlmModelRoutes = router;
