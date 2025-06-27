@@ -15,6 +15,12 @@ router.post(
   AuthControllers.loginUser
 );
 
+router.post(
+  "/logout",
+  auth(USER_ROLE.ADMIN),
+ AuthControllers.logOutUser
+)
+
 
 router.get(
   "/google",
