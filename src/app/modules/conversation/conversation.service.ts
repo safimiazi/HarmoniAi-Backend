@@ -18,15 +18,35 @@ const createConversationIntoDB = async (id: string, platform: string) => {
 
   return result;
 };
-
 const addAMessage = async (payload: TMessage) => {
-
   const session = await mongoose.startSession();
 
   try {
     session.startTransaction();
 
-    // 1. Create the message
+    // Step 1: Fetch config
+    const configureData = await configureModel.findOne({}, null, { session });
+    if (!configureData) {
+      throw new ApiError(
+        httpStatus.NOT_FOUND,
+        "Configuration data not found"
+      );
+    }
+
+    const pricePerToken = configureData.dollerPerToken;
+    const tokenUsed = parseFloat((payload.price / pricePerToken).toFixed(10));
+
+    // Step 2: Check user balance before proceeding
+    const user = await User.findById(payload.userId, null, { session });
+    if (!user) {
+      throw new ApiError(httpStatus.NOT_FOUND, "User not found");
+    }
+
+    if (user.token < tokenUsed) {
+      throw new ApiError(httpStatus.BAD_REQUEST, "Insufficient tokens to send this message.");
+    }
+
+    // Step 3: Create message
     const message = await Message.create([payload], { session });
     const result = message[0];
     if (!result) {
@@ -36,7 +56,7 @@ const addAMessage = async (payload: TMessage) => {
       );
     }
 
-    // 2. Push message to conversation
+    // Step 4: Push message to conversation
     const conversation = await Conversation.findByIdAndUpdate(
       payload.chatId,
       { $push: { chat: result._id } },
@@ -46,24 +66,11 @@ const addAMessage = async (payload: TMessage) => {
     if (!conversation) {
       throw new ApiError(
         httpStatus.INTERNAL_SERVER_ERROR,
-        "Failed to create conversation"
+        "Failed to update conversation"
       );
     }
 
-    // 3. Fetch config
-    const configureData = await configureModel.findOne({}, null, { session });
-    if (!configureData) {
-      throw new ApiError(
-        httpStatus.NOT_FOUND,
-        "Configuration data not found"
-      );
-    }
-
-    // 4. Calculate token usage
-    const pricePerToken = configureData.dollerPerToken;
-    const tokenUsed = (payload.price / pricePerToken).toFixed(10);
-
-    // 5. Deduct token from user
+    // Step 5: Deduct tokens from user
     const updatedUser = await User.findByIdAndUpdate(
       payload.userId,
       { $inc: { token: -tokenUsed } },
@@ -71,7 +78,7 @@ const addAMessage = async (payload: TMessage) => {
     );
 
     if (!updatedUser) {
-      throw new ApiError(httpStatus.NOT_FOUND, "User not found");
+      throw new ApiError(httpStatus.NOT_FOUND, "User not found while deducting token.");
     }
 
     await session.commitTransaction();
@@ -84,6 +91,74 @@ const addAMessage = async (payload: TMessage) => {
     throw error;
   }
 };
+
+
+
+// const addAMessage = async (payload: TMessage) => {
+
+//   const session = await mongoose.startSession();
+
+//   try {
+//     session.startTransaction();
+
+//     // 1. Create the message
+//     const message = await Message.create([payload], { session });
+//     const result = message[0];
+//     if (!result) {
+//       throw new ApiError(
+//         httpStatus.INTERNAL_SERVER_ERROR,
+//         "Failed to create message"
+//       );
+//     }
+
+//     // 2. Push message to conversation
+//     const conversation = await Conversation.findByIdAndUpdate(
+//       payload.chatId,
+//       { $push: { chat: result._id } },
+//       { session }
+//     );
+
+//     if (!conversation) {
+//       throw new ApiError(
+//         httpStatus.INTERNAL_SERVER_ERROR,
+//         "Failed to create conversation"
+//       );
+//     }
+
+//     // 3. Fetch config
+//     const configureData = await configureModel.findOne({}, null, { session });
+//     if (!configureData) {
+//       throw new ApiError(
+//         httpStatus.NOT_FOUND,
+//         "Configuration data not found"
+//       );
+//     }
+
+//     // 4. Calculate token usage
+//     const pricePerToken = configureData.dollerPerToken;
+//     const tokenUsed = (payload.price / pricePerToken).toFixed(10);
+
+//     // 5. Deduct token from user
+//     const updatedUser = await User.findByIdAndUpdate(
+//       payload.userId,
+//       { $inc: { token: -tokenUsed } },
+//       { new: true, session }
+//     );
+
+//     if (!updatedUser) {
+//       throw new ApiError(httpStatus.NOT_FOUND, "User not found");
+//     }
+
+//     await session.commitTransaction();
+//     session.endSession();
+
+//     return result;
+//   } catch (error) {
+//     await session.abortTransaction();
+//     session.endSession();
+//     throw error;
+//   }
+// };
 
 const getAllConversationsFromDB = async (id: string, query: any) => {
 
