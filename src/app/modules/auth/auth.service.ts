@@ -66,6 +66,7 @@ const loginUser = async (payload: TLoginUser) => {
     return {
       accessToken,
       refreshToken,
+      role: user.role,
       isVerified: user.isVerified,
       isVerificationExpired: user.verificationCodeExpiresAt < new Date(),
     };
