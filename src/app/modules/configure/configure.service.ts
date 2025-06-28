@@ -40,8 +40,7 @@ export const configureService = {
     id: string;
   }) {
     try {
-
-
+      
       const isExisting = await configureModel.findOne({ _id: data.id });
       if (!isExisting) {
         throw new ApiError(status.NOT_FOUND, "Configuration not found");

@@ -7,7 +7,7 @@ import ApiError from "../errors/ApiError";
 import httpStatus from "http-status";
 
 nodeCron.schedule("0 0 * * *", async () => {
-  console.log("Running daily token reset at midnight");
+  // console.log("Running daily token reset at midnight");
 
   const session = await mongoose.startSession();
   session.startTransaction();
@@ -36,7 +36,7 @@ nodeCron.schedule("0 0 * * *", async () => {
     );
 
     await session.commitTransaction();
-    console.log(`✅ Daily token reset completed for ${result.modifiedCount} users (non-recurring)`);
+    // console.log(`✅ Daily token reset completed for ${result.modifiedCount} users (non-recurring)`);
   } catch (error) {
     await session.abortTransaction();
     console.error("❌ Cron job failed:", error);

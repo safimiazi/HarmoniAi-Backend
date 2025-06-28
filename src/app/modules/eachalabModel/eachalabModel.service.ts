@@ -69,39 +69,49 @@ export const eachalabModelService = {
       throw error;
     }
   },
+
   async updateEachalabModelIntoDB(data: any, file: any) {
     try {
-
-
-
-      const isDeleted = await eachalabModelModel.findOne({ _id: data.id });
-      if (isDeleted?.isDeleted) {
-        throw new ApiError(status.NOT_FOUND, "eachaEachalab Model labModel is already deleted");
+      const model = await eachalabModelModel.findOne({ _id: data.id });
+      if (!model) {
+        throw new ApiError(status.NOT_FOUND, "Eachalab Model not found.");
       }
 
-      if (!file)
-        throw new ApiError(httpStatus.BAD_REQUEST, "Please provide an image first");
+      if (model.isDeleted) {
+        throw new ApiError(status.NOT_FOUND, "Eachalab Model is already deleted.");
+      }
 
-      const imageName = `${data.name}-${Date.now()}`;
-      const cloudinary_response = (await sendFileToCloudinary(
-        imageName,
-        file?.path,
-        "thumbnail"
-      )) as { secure_url: string };
+      let updatedFields = { ...data };
 
-      const result = await eachalabModelModel.updateOne({ _id: data.id }, { ...data, thumbnail_url: cloudinary_response.secure_url }, {
-        new: true,
-      });
+      // If a new file is provided, upload and update thumbnail
+      if (file) {
+        const imageName = `${data.name}-${Date.now()}`;
+        const cloudinary_response = await sendFileToCloudinary(
+          imageName,
+          file.path,
+          "thumbnail"
+        ) as { secure_url: string };
+
+        updatedFields.thumbnail_url = cloudinary_response.secure_url;
+      }
+
+      const result = await eachalabModelModel.updateOne(
+        { _id: data.id },
+        updatedFields,
+        { new: true }
+      );
+
       if (!result) {
-        throw new ApiError(status.NOT_FOUND, "Eachalab Model  not found.");
+        throw new ApiError(status.NOT_FOUND, "Failed to update Eachalab Model.");
       }
-      return result;
 
+      return result;
 
     } catch (error: unknown) {
       throw error;
     }
   },
+  
   async deleteEachalabModelFromDB(id: string) {
     try {
 
