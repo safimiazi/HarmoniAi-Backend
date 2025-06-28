@@ -107,8 +107,8 @@ const resetPassword = catchAsync(async (req, res) => {
     data: result,
   });
 });
+
 const logOutUser = catchAsync(async (req, res) => {
-  
   res.clearCookie("token", {
     httpOnly: true,
     secure: false,

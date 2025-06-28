@@ -175,7 +175,7 @@ export const handleStripeWebhook = async (req: Request, res: Response) => {
 
     // ❌ If recurring, skip processing here — it's handled in `invoice.paid`
     if (plan.type === "recurring") {
-      console.log("ℹ️ Recurring plan detected. Skipping processing in checkout.session.completed. Handled in invoice.paid.");
+      // console.log("ℹ️ Recurring plan detected. Skipping processing in checkout.session.completed. Handled in invoice.paid.");
       return res.status(200).send();
     }
 
@@ -192,7 +192,7 @@ export const handleStripeWebhook = async (req: Request, res: Response) => {
       }).session(sessionDb);
 
       if (exists) {
-        console.log("⚠️ Subscription already exists for this payment intent. Skipping.");
+        // console.log("⚠️ Subscription already exists for this payment intent. Skipping.");
         await sessionDb.abortTransaction();
         return res.status(200).send();
       }
@@ -279,7 +279,7 @@ export const handleStripeWebhook = async (req: Request, res: Response) => {
       }).session(sessionDb);
 
       if (exists) {
-        console.log("⚠️ Recurring payment already logged. Skipping.");
+        // console.log("⚠️ Recurring payment already logged. Skipping.");
         await sessionDb.abortTransaction();
         return res.status(200).send();
       }
