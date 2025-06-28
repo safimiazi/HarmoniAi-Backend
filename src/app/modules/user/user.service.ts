@@ -40,6 +40,7 @@ const getAllUsersFromDB = async (query: any) => {
 
   if (query.isDeleted !== undefined) {
     baseFilter.isDeleted = query.isDeleted || false;
+    baseFilter.role = { $ne: "admin"}
   }
   const service_query = new QueryBuilder(User.find(baseFilter), query)
     .search(USER_SEARCHABLE_FIELDS)
