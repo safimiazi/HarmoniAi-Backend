@@ -1,9 +1,9 @@
 import { Schema, model } from "mongoose";
 import { TConversation, TMessage } from "./conversation.interface";
-import { string } from "zod";
 
 const CardSchema = new Schema(
   {
+    id: {type: String},
     title: { type: String, required: true },
     description: String,
     type: {
@@ -11,6 +11,11 @@ const CardSchema = new Schema(
       enum: ["image", "video"],
       required: true,
       default: "image",
+    },
+    image: {
+      type: String,
+      require: false,
+      default: null
     },
     file: { type: String, required: true },
     price: { type: Number, required: true },
