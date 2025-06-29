@@ -282,6 +282,7 @@ const changeConversationNameIntoDB = async (id: string, name: string) => {
   await Conversation.findOneAndDelete({ chatId: id });
 };
 
+
 export const conversationService = {
   createConversationIntoDB,
   addAMessage,
