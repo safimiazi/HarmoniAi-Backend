@@ -1,9 +1,9 @@
 import { Schema, model } from "mongoose";
 import { TConversation, TMessage } from "./conversation.interface";
-import { string } from "zod";
 
 const CardSchema = new Schema(
   {
+    id: {type: String},
     title: { type: String, required: true },
     description: String,
     type: {
