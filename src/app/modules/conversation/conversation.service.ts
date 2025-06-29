@@ -226,10 +226,14 @@ const getMessagesFromConversationFromDB = async (conversationId: string) => {
   const conversation = await Conversation.findById(conversationId).populate({
     path: "chat",
     model: Message,
-    populate: {
+    populate: [
+    {
       path: "userId",
-      select: "_id name email", // include relevant user fields
+      select: "_id name email", 
     },
+    {
+      path: "chatId"    },
+  ],
   });
   if (!conversation) {
     throw new ApiError(404, "Conversation not found");
