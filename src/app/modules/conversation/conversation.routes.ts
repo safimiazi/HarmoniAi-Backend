@@ -18,7 +18,6 @@ router.post(
 
 router.post(
   "/add-message",
-  auth(USER_ROLE.ADMIN, USER_ROLE.USER),
   conversationController.addAMessage
 );
 

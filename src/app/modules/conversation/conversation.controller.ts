@@ -18,9 +18,7 @@ const createConversartion = catchAsync(async (req: Request, res: Response) => {
 });
 
 const addAMessage = catchAsync(async (req: Request, res: Response) => {
-  const { userId } = req.loggedInUser;
   const result = await conversationService.addAMessage({
-    userId,
     ...req.body,
   });
 

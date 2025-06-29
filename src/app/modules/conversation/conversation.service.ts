@@ -19,6 +19,12 @@ const createConversationIntoDB = async (id: string, platform: string) => {
   return result;
 };
 const addAMessage = async (payload: TMessage) => {
+
+
+  if(!payload.userId){
+    throw new ApiError(httpStatus.NOT_FOUND, "User id not found!")
+  }
+
   const session = await mongoose.startSession();
 
   try {
@@ -275,6 +281,7 @@ const changeConversationNameIntoDB = async (id: string, name: string) => {
   }
   await Conversation.findOneAndDelete({ chatId: id });
 };
+
 
 export const conversationService = {
   createConversationIntoDB,
