@@ -12,6 +12,11 @@ const CardSchema = new Schema(
       required: true,
       default: "image",
     },
+    image: {
+      type: String,
+      require: false,
+      default: null
+    },
     file: { type: String, required: true },
     price: { type: Number, required: true },
   },
