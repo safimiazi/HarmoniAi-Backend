@@ -37,7 +37,7 @@ const PromptSchema = new Schema(
   {
     type: {
       type: String,
-      enum: ["text", "audio", "video", "image", "document"],
+      enum: ["text", "audio", "video", "image", "pdf", "document"],
       required: true,
       default: "text",
     },
@@ -51,7 +51,7 @@ const ResponseSchema = new Schema(
   {
     type: {
       type: String,
-      enum: ["text", "audio", "video", "image", "document", "card"],
+      enum: ["text", "audio", "video", "image", "document", "pdf", "card"],
       required: true,
       default: "text",
     },
