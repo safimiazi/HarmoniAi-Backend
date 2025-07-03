@@ -48,9 +48,9 @@ const addAMessage = async (payload: TMessage) => {
       throw new ApiError(httpStatus.NOT_FOUND, "User not found");
     }
 
-    if (user.token < tokenUsed) {
-      throw new ApiError(httpStatus.BAD_REQUEST, "Insufficient tokens to send this message.");
-    }
+    // if (user.token < tokenUsed) {
+    //   throw new ApiError(httpStatus.BAD_REQUEST, "Insufficient tokens to send this message.");
+    // }
 
     // Step 3: Create message
     const message = await Message.create([payload], { session });
@@ -77,15 +77,15 @@ const addAMessage = async (payload: TMessage) => {
     }
 
     // Step 5: Deduct tokens from user
-    const updatedUser = await User.findByIdAndUpdate(
-      payload.userId,
-      { $inc: { token: -tokenUsed } },
-      { new: true, session }
-    );
+    // const updatedUser = await User.findByIdAndUpdate(
+    //   payload.userId,
+    //   { $inc: { token: -tokenUsed } },
+    //   { new: true, session }
+    // );
 
-    if (!updatedUser) {
-      throw new ApiError(httpStatus.NOT_FOUND, "User not found while deducting token.");
-    }
+    // if (!updatedUser) {
+    //   throw new ApiError(httpStatus.NOT_FOUND, "User not found while deducting token.");
+    // }
 
     await session.commitTransaction();
     session.endSession();

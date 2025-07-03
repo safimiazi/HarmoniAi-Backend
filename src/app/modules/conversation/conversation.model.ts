@@ -12,7 +12,18 @@ const CardSchema = new Schema(
       required: true,
       default: "image",
     },
+
     image: {
+      type: String,
+      require: false,
+      default: null
+    },
+    department: {
+      type: String,
+      require: false,
+      default: null
+    },
+    color: {
       type: String,
       require: false,
       default: null
