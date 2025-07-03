@@ -30,6 +30,24 @@ export const updateUserProfileService = async (
   return updatedUser;
 };
 
+export const updateTokenFromUser = async (
+  userId: string,
+  tokensToDeduct: any
+) => {
+  // Deduct tokens from user
+  const updatedUser = await User.findByIdAndUpdate(
+    userId,
+    { $inc: { token: -tokensToDeduct } },
+    { new: true }
+  );
+
+  if (!updatedUser) {
+    throw new ApiError(httpStatus.NOT_FOUND, "User not found while deducting token.");
+  }
+  return updatedUser
+};
+
+
 
 const getAllUsersFromDB = async (query: any) => {
   let baseFilter: any = {};

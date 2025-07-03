@@ -1,4 +1,4 @@
-import { generateVerificationCode, updateUserProfileService, UserServices } from "./user.service";
+import { generateVerificationCode, updateTokenFromUser, updateUserProfileService, UserServices } from "./user.service";
 import { catchAsync } from "../../utils/catchAsync";
 import sendResponse from "../../utils/sendResponse";
 import httpStatus from "http-status";
@@ -176,6 +176,18 @@ const adminUpdateUserProfile = catchAsync(async (req, res) => {
   res.status(httpStatus.OK).json({
     success: true,
     message: "Profile updated successfully",
+    data: updatedUser,
+  });
+});
+const updateToken = catchAsync(async (req, res) => {
+  const userId = req.params.id;
+  const tokensToDeduct = req.body.token;
+
+  const updatedUser = await updateTokenFromUser(userId, tokensToDeduct);
+
+  res.status(httpStatus.OK).json({
+    success: true,
+    message: "Token Deduct successfully",
     data: updatedUser,
   });
 });
@@ -394,6 +406,7 @@ const deleteAddress = catchAsync(async (req, res) => {
 
 export const UserControllers = {
   verifyOTP,
+  updateToken,
   deleteAddress,
   updateUserProfile,
   adminUpdateUserProfile,

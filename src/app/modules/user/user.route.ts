@@ -17,6 +17,7 @@ router.post(
   UserControllers.createAUser
 );
 router.put('/update-profile', auth(USER_ROLE.ADMIN, USER_ROLE.USER), UserControllers.updateUserProfile);
+router.put('/update-token/:id', auth(USER_ROLE.ADMIN, USER_ROLE.USER), UserControllers.updateToken);
 router.put('/admin-update-profile/:id', auth(USER_ROLE.USER), UserControllers.adminUpdateUserProfile);
 
 router.post("/verify", UserControllers.verifyOTP);
