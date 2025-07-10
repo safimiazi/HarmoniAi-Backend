@@ -12,6 +12,12 @@ const addressSchema = new Schema(
     state: { type: String },
     postalCode: { type: String },
     country: { type: String, required: true },
+    countryCode: {
+      type: String
+    },
+    phoneNumber: {
+      type: String
+    }
   },
 );
 

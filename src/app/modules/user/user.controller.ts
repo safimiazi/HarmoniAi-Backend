@@ -378,24 +378,17 @@ const resendVerificationCode = catchAsync(async (req, res) => {
 
 const deleteAddress = catchAsync(async (req, res) => {
   const { userId } = req.loggedInUser;
-  const addressId = req.params.id
+  const addressId = req.params.id;
 
-  const user = await User.findById(userId).select('addresses');
+  const result = await User.updateOne(
+    { _id: userId },
+    { $pull: { addresses: { _id: addressId } } }
+  );
 
-  if (!user) {
-    throw new ApiError(httpStatus.NOT_FOUND, "User not found.")
+  if (result.modifiedCount === 0) {
+    throw new ApiError(httpStatus.NOT_FOUND, "Address not found or already deleted");
   }
 
-  // find the address by its _id:
-  const address = (user.addresses as any).id(addressId)
-
-  if (!address) {
-    throw new ApiError(httpStatus.NOT_FOUND, "address not found")
-  }
-  address.remove();
-  await user.save()
-
-  await user.save();
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
@@ -403,6 +396,8 @@ const deleteAddress = catchAsync(async (req, res) => {
     data: null,
   });
 });
+
+
 
 export const UserControllers = {
   verifyOTP,
