@@ -35,6 +35,8 @@ export const addressValidationSchema = z.object({
     state: z.string().optional(),
     postalCode: z.string().optional(),
     country: z.string().min(1, "Country is required"),
+    countryCode: z.string().optional(),
+    phoneNumber: z.string().optional()
   }),
 });
 
